@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { RGBELoader } from 'three/addons/loaders/RGBELoader.js'
+import GUI from 'lil-gui'
 import CustomShaderMaterial from 'three-custom-shader-material/vanilla'
 import terrainVertexShader from './shaders/terrain/vertex.glsl'
 import terrainFragmentShader from './shaders/terrain/fragment.glsl'
@@ -17,16 +18,21 @@ const canvas = document.querySelector('canvas.webgl')
 const scene = new THREE.Scene()
 
 /**
+ * Debug
+ */
+//const gui = new GUI()
+
+/**
  * Environment map
  */
-// const rgbeLoader = new RGBELoader()
-// rgbeLoader.load('./urban_alley_01_1k.hdr', (environmentMap) =>
-// {
-//     environmentMap.mapping = THREE.EquirectangularReflectionMapping
+const rgbeLoader = new RGBELoader()
+rgbeLoader.load('./urban_alley_01_1k.hdr', (environmentMap) =>
+{
+    environmentMap.mapping = THREE.EquirectangularReflectionMapping
 
-//     scene.background = environmentMap
-//     scene.environment = environmentMap
-// })
+    scene.background = environmentMap
+    scene.environment = environmentMap
+})
 
 
 /**
@@ -37,8 +43,8 @@ directionalLight.castShadow = true
 directionalLight.shadow.mapSize.set(1024, 1024)
 directionalLight.shadow.normalBias = 0.2
 directionalLight.position.set(30, 20, 10)
-const helper = new THREE.CameraHelper(directionalLight.shadow.camera)
-scene.add(helper)
+// const helper = new THREE.CameraHelper(directionalLight.shadow.camera)
+// scene.add(helper)
 scene.add(directionalLight)
 
 
@@ -46,7 +52,9 @@ scene.add(directionalLight)
  * Terrain
  */
 // Geometry
-const terrainGeometry = new THREE.PlaneGeometry(100, 100, 128, 128)
+const terrainGeometry = new THREE.PlaneGeometry(500, 500, 512, 512)
+terrainGeometry.computeTangents()
+// console.log(terrainGeometry.attributes);
 
 // Material
 const terrainMaterial = new CustomShaderMaterial({
@@ -54,16 +62,24 @@ const terrainMaterial = new CustomShaderMaterial({
     baseMaterial: THREE.MeshPhysicalMaterial,
     vertexShader: terrainVertexShader,
     fragmentShader: terrainFragmentShader,
-    uniforms:
-    {
-        uBigTerrainElevation: {value: 1.0},
-        uBigTerrainFrequency: { value: new THREE.Vector2(100, 20.5) }
-    },
-    roughness: 1.0,
+    // uniforms:
+    // {
+    //     uSimplexA: {value: 18.20},
+    //     uSimplexF: {value: 0.0025},
+    //     uGain: {value: 0.25},
+    //     uLacunarity: {value: 3.25},
+    // },
     wireframe: false,
-    color: '#ffffffff',
-    side: THREE.FrontSide
+    roughness: 0.8,
+    metalness: 0.0,
+    side: THREE.FrontSide,
+    color: new THREE.Color('rgb(92, 64, 51)'),
 })
+
+// gui.add(terrainMaterial.uniforms.uSimplexA, 'value').min(0).max(30).step(0.01).name('uSimplexAmplitude');
+// gui.add(terrainMaterial.uniforms.uSimplexF, 'value').min(0).max(0.05).step(0.001).name('uSimplexFrequency');
+// gui.add(terrainMaterial.uniforms.uGain, 'value').min(0.0).max(1.0).step(0.01).name('uGain');
+// gui.add(terrainMaterial.uniforms.uLacunarity, 'value').min(0).max(5).step(0.05).name('uLacunarity');
 
 const depthMaterial = new CustomShaderMaterial({
     //CSM

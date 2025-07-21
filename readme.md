@@ -1,16 +1,3 @@
-# Three.js Journey
+# Grass Portfolio
 
-## Setup
-Download [Node.js](https://nodejs.org/en/download/).
-Run this followed commands:
-
-``` bash
-# Install dependencies (only the first time)
-npm install
-
-# Run the local server at localhost:8080
-npm run dev
-
-# Build for production in the dist/ directory
-npm run build
-```
+This is my fourth portfolio version within a year. The goal is to make a scene of at least hundreds of thousands of moving, procedurally generated grass blades using instaced meshes, frustrum culling, chunk loading, level of detail, fog, and postprocessing effects. It is coded in vanilla Three.js.
