@@ -1,4 +1,6 @@
+varying vec3 vVertexColor;
+
 void main()
 {
-    // gl_FragColor = vec4(0.45, 0.3, 0.15, 1.0);
+    csm_FragColor = vec4(vVertexColor, 1.0);
 }
