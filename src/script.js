@@ -27,7 +27,7 @@ const scene = new THREE.Scene()
  * Environment map
  */
 const rgbeLoader = new RGBELoader()
-rgbeLoader.load('./urban_alley_01_1k.hdr', (environmentMap) =>
+rgbeLoader.load('./purenight.hdr', (environmentMap) =>
 {
     environmentMap.mapping = THREE.EquirectangularReflectionMapping
 
@@ -37,12 +37,12 @@ rgbeLoader.load('./urban_alley_01_1k.hdr', (environmentMap) =>
 
 
 
-
+const terrainSize = 500;
 
 /**
  * Terrain
  */
-const terrainGeometry = new THREE.PlaneGeometry(500, 500, 256, 256)
+const terrainGeometry = new THREE.PlaneGeometry(terrainSize, terrainSize, 256, 256)
 terrainGeometry.computeTangents()
 
 const terrainMaterial = new CustomShaderMaterial({
@@ -72,34 +72,29 @@ scene.add(terrain)
 
 const grassWidth = 0.1;
 const grassHeight = 3.0;
+const numOfGrass = 250000; //minimum [SQROOT(terrainSize)] if 1 grass blade per meter
 
-
-const bladeGeometry = new THREE.PlaneGeometry(grassWidth, grassHeight);
+const grassGeometry = new THREE.PlaneGeometry(grassWidth, grassHeight);
 
 const grassMaterial = new CustomShaderMaterial({
     baseMaterial: THREE.MeshStandardMaterial,
     vertexShader: grassVertexShader,
     fragmentShader: grassFragmentShader,
     uniforms:{
-        uGrassHeight: {value: grassHeight}
+        uGrassHeight: {value: grassHeight},
+        uNumOfGrass: {value: numOfGrass},
+        uTerrainSize: {value: terrainSize},
     },
     wireframe: false,
-    roughness: 0.5,
+    roughness: 1.0,
     metalness: 0.0,
     side: THREE.DoubleSide,
     color: new THREE.Color('rgb(57, 145, 22)')
 })
 
-// Number of grass instances
-const count = 5000000;
-const instancedMesh = new THREE.InstancedMesh(bladeGeometry, grassMaterial, count);
 
-const dummy = new THREE.Object3D();
-for (let i = 0; i < count; i++) {
-    dummy.updateMatrix();
-    instancedMesh.setMatrixAt(i, dummy.matrix);
-    instancedMesh.instanceMatrix.needsUpdate = true;
-}
+const instancedMesh = new THREE.InstancedMesh(grassGeometry, grassMaterial, numOfGrass);
+//instancedMesh.instanceMatrix.setUsage(THREE.StaticDrawUsage);
 scene.add(instancedMesh);
 
 
@@ -156,10 +151,10 @@ const tick = () =>
     stats.begin();
     controls.update()
     renderer.render(scene, camera);
-    // console.log(
-    //   'Draw calls:', renderer.info.render.calls,
-    //   'Triangles:', renderer.info.render.triangles
-    // );    
+    console.log(
+      'Draw calls:', renderer.info.render.calls,
+      'Triangles:', renderer.info.render.triangles
+    );    
     stats.end();
     window.requestAnimationFrame(tick)
 }
