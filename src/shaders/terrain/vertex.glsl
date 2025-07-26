@@ -11,7 +11,7 @@ void main() {
   vec3 positionB = csm_Position + biTangent * shift;
 
   float elevation = getElevation(csm_Position);
-  csm_Position = position + vec3(0.0, 0.0, elevation); //apply calculated displacement to vertices
+  csm_Position = position + vec3(0.0, 0.0, elevation); //apply calculated displacement to vertices. z-axis is displaced because in script.js, the plane is rotated 90 degrees.
   positionA += getElevation(positionA) * normal;
   positionB += getElevation(positionB) * normal;
 

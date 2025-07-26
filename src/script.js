@@ -44,7 +44,7 @@ rgbeLoader.load('./urban_alley_01_1k.hdr', (environmentMap) =>
  */
 const terrainGeometry = new THREE.PlaneGeometry(500, 500, 256, 256)
 terrainGeometry.computeTangents()
-// console.log("UV!", terrainGeometry.attributes.uv); // I already have access to the uv coords
+
 const terrainMaterial = new CustomShaderMaterial({
     baseMaterial: THREE.MeshPhysicalMaterial,
     vertexShader: terrainVertexShader,
@@ -52,14 +52,16 @@ const terrainMaterial = new CustomShaderMaterial({
     wireframe: false,
     roughness: 0.9,
     metalness: 0.0,
-    side: THREE.FrontSide,
-    //color: new THREE.Color('rgb(92, 64, 51)'),
+    side: THREE.DoubleSide,
+    color: new THREE.Color('rgb(92, 64, 51)'),
 })
+
 const depthMaterial = new CustomShaderMaterial({
     baseMaterial: THREE.MeshDepthMaterial,
     vertexShader: terrainVertexShader,
     depthPacking: THREE.RGBADepthPacking //The depthPacking is an algorithm used by Three.js to encode the depth in all 4 channels instead of a grayscale depth, which improves the precision.
 })
+
 const terrain = new THREE.Mesh(terrainGeometry, terrainMaterial)
 terrain.customDepthMaterial = depthMaterial
 terrain.rotation.x = - Math.PI * 0.5
@@ -68,41 +70,35 @@ scene.add(terrain)
 
 
 
+const grassWidth = 0.1;
+const grassHeight = 3.0;
 
 
-// Grass blade geometry (single blade reused across instances)
-const bladeGeometry = new THREE.PlaneGeometry(0.3, 3.0);
-// Basic material for now; you’ll probably switch to ShaderMaterial later
+const bladeGeometry = new THREE.PlaneGeometry(grassWidth, grassHeight);
+
 const grassMaterial = new CustomShaderMaterial({
     baseMaterial: THREE.MeshStandardMaterial,
     vertexShader: grassVertexShader,
     fragmentShader: grassFragmentShader,
+    uniforms:{
+        uGrassHeight: {value: grassHeight}
+    },
     wireframe: false,
     roughness: 0.5,
     metalness: 0.0,
     side: THREE.DoubleSide,
-    color: new THREE.Color('rgb(0, 255, 0)')
+    color: new THREE.Color('rgb(57, 145, 22)')
 })
 
 // Number of grass instances
 const count = 5000000;
 const instancedMesh = new THREE.InstancedMesh(bladeGeometry, grassMaterial, count);
 
-// Terrain size for UV reconstruction
-const terrainWidth = 500;
-const terrainHeight = 500;
-
 const dummy = new THREE.Object3D();
 for (let i = 0; i < count; i++) {
-    const x = Math.random() * terrainWidth - terrainWidth / 2;
-    const z = Math.random() * terrainHeight - terrainHeight / 2;
-
-    dummy.position.set(0, 0, 0);
-    //dummy.rotation.y = Math.random() * Math.PI * 2;
     dummy.updateMatrix();
     instancedMesh.setMatrixAt(i, dummy.matrix);
     instancedMesh.instanceMatrix.needsUpdate = true;
-
 }
 scene.add(instancedMesh);
 
