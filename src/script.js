@@ -70,9 +70,9 @@ scene.add(terrain)
 
 
 
-const grassWidth = 0.1;
-const grassHeight = 3.0;
-const numOfGrass = 250000; //minimum [SQROOT(terrainSize)] if 1 grass blade per meter
+const grassWidth = 0.2;
+const grassHeight = 5.0;
+const numOfGrass = 100000; //minimum [SQROOT(terrainSize)] if 1 grass blade per meter
 
 const grassGeometry = new THREE.PlaneGeometry(grassWidth, grassHeight);
 
