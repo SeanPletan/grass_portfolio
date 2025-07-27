@@ -7,7 +7,7 @@ float getElevation(vec3 position) {
   float gain = 0.25;
   float lac = 2.7;
 
-  for (int i = 1; i <= 5; i++)
+  for (int i = 1; i <= 4; i++)
   {
     elevation += (amp * snoise(position.xy * freq));
     //elevation += (9.0 * snoise(position.xy * 0.005));

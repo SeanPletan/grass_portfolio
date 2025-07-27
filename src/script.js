@@ -70,9 +70,10 @@ scene.add(terrain)
 
 
 
-const grassWidth = 0.2;
-const grassHeight = 5.0;
-const numOfGrass = 100000; //minimum [SQROOT(terrainSize)] if 1 grass blade per meter
+const grassWidth = 0.1;
+const grassHeight = 3.0;
+const grassDensity = .5;
+const numOfGrass = grassDensity * terrainSize * terrainSize; //minimum [SQROOT(terrainSize)] if 1 grass blade per meter
 
 const grassGeometry = new THREE.PlaneGeometry(grassWidth, grassHeight);
 
@@ -84,6 +85,7 @@ const grassMaterial = new CustomShaderMaterial({
         uGrassHeight: {value: grassHeight},
         uNumOfGrass: {value: numOfGrass},
         uTerrainSize: {value: terrainSize},
+        uGrassDensity: {value: grassDensity}
     },
     wireframe: false,
     roughness: 1.0,
@@ -128,7 +130,8 @@ window.addEventListener('resize', () =>
  * Camera
  */
 const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1)
-camera.position.set(-330, 200, 0)
+//camera.position.set(-330, 200, 0)
+camera.position.set(0, 20, 40)
 scene.add(camera)
 // Controls
 const controls = new OrbitControls(camera, canvas)
