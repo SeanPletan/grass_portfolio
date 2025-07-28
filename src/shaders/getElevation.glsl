@@ -2,8 +2,8 @@
 
 float getElevation(vec3 position) {
   float elevation = 0.0;
-  float amp = 9.0;
-  float freq = 0.005;
+  float amp = 7.0;
+  float freq = 0.003;
   float gain = 0.25;
   float lac = 2.7;
 

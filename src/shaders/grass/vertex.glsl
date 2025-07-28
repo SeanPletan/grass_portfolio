@@ -14,7 +14,7 @@ float random2D(vec2 st) {
 }
 
 // Returns XZ offset
-void getGrassPosition(int instanceID, out vec3 offset) {
+void getGrassPosition(int instanceID, out vec3 offset, out float heightScale) {
     float instance = float(instanceID);
 
 
@@ -32,11 +32,11 @@ void getGrassPosition(int instanceID, out vec3 offset) {
     finalZ += random2D(vec2(finalZ + 5.0, finalX + 2.0));                           //random offset
 
 
-
+    heightScale = abs(3.0 * snoise(vec2(finalX, finalZ) * 0.04));
 
     // Elevation lookup
     float finalY = getElevation(vec3(finalX, - finalZ, 0.0)); //z axis is flipped, so I unflipped it. Not sure why it is flipped.
-    finalY += (uGrassHeight / 2.0); //make the bottom of the grass level with terrain
+    finalY += abs(uGrassHeight * heightScale); //make the bottom of the grass level with terrain
 
 
     offset = vec3(finalX, finalY, finalZ);
@@ -58,12 +58,16 @@ void main() {
     // Compute per-instance transform
     vec3 offset;
     mat3 rotY;
-    getGrassPosition(gl_InstanceID, offset);
+    float heightScale;
+    getGrassPosition(gl_InstanceID, offset, heightScale);
     getGrassAngle(offset, rotY);
 
 
+    
+    vec3 scaled = vec3(position.x, position.y * uGrassHeight * heightScale, position.z);
+
     // Apply rotation AFTER offset, to vertex in local space
-    vec3 rotated = rotY * position;
+    vec3 rotated = rotY * scaled;
     
     // final position
     csm_Position = rotated + offset;
