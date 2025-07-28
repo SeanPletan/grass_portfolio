@@ -72,8 +72,11 @@ scene.add(terrain)
 
 const grassWidth = 0.1;
 const grassHeight = 3.0;
-const grassDensity = .5;
-const numOfGrass = grassDensity * terrainSize * terrainSize; //minimum [SQROOT(terrainSize)] if 1 grass blade per meter
+const grassDensity = 1.0;
+let numOfGrass = 100000; //minimum [SQROOT(terrainSize)] if 1 grass blade per meter or more
+
+if (numOfGrass < (terrainSize * terrainSize * grassDensity))
+    numOfGrass = terrainSize * terrainSize * grassDensity;
 
 const grassGeometry = new THREE.PlaneGeometry(grassWidth, grassHeight);
 
@@ -130,8 +133,8 @@ window.addEventListener('resize', () =>
  * Camera
  */
 const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1)
-//camera.position.set(-330, 200, 0)
-camera.position.set(0, 20, 40)
+camera.position.set(-330, 200, 0)
+//camera.position.set(0, 20, 40)
 scene.add(camera)
 // Controls
 const controls = new OrbitControls(camera, canvas)

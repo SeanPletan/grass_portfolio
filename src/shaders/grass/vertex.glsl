@@ -3,7 +3,7 @@
 uniform float uGrassHeight;
 uniform float uGrassDensity;
 uniform float uNumOfGrass;
-uniform int uTerrainSize;
+uniform float uTerrainSize;
 
 float random(vec3 p) {
     return fract(sin(dot(p.xyz, vec3(12.9898, 78.233, 54.53))) * 43758.5453);
@@ -15,26 +15,21 @@ float random2D(vec2 st) {
 
 // Returns XZ offset
 void getGrassPosition(int instanceID, out vec3 offset) {
-
-    float floatTerrainSize = float(uTerrainSize);
-    float grassDensity = uGrassDensity;
     float instance = float(instanceID);
 
-    float gridX = mod(instance, (floatTerrainSize * grassDensity));
-    float gridZ = instance / ((uNumOfGrass / grassDensity) / floatTerrainSize);
 
 
-    //int gridX = (instanceID % (uTerrainSize * grassDensity));                               //divides into rows (terainSize * grassDensity = numOfRows)
-    //int gridZ = (instanceID / ((uNumOfGrass / grassDensity) / uTerrainSize));               //divides into cols (terainSize * grassDensity = numOfCols)
+    float finalX = mod(instance, (uTerrainSize * uGrassDensity));                //divides into rows (terainSize * grassDensity = numOfRows)
+    float finalZ = instance / ((uNumOfGrass / uGrassDensity) / uTerrainSize);    //divides into cols (terainSize * grassDensity = numOfCols)
 
-    float finalX = float(gridX) / float(grassDensity);                  //centers onto terrain 
-    float finalZ = float(gridZ) / float(grassDensity);                  //centers onto terrain 
+    finalX /= uGrassDensity;                                                         //centers onto terrain 
+    finalZ /= uGrassDensity;                                                         //centers onto terrain 
 
-    finalX -= (floatTerrainSize / 2.0);                                 //centers onto terrain
-    finalZ -= (floatTerrainSize / 2.0);                                 //centers onto terrain
+    finalX -= (uTerrainSize / 2.0);                                             //centers onto terrain
+    finalZ -= (uTerrainSize / 2.0);                                             //centers onto terrain
 
-    finalX += random2D(vec2(gridX, gridZ));                             //random offset
-    finalZ += random2D(vec2(gridZ + 5.0, gridX + 2.0));                     //random offset
+    finalX += random2D(vec2(finalX, finalZ));                                       //random offset
+    finalZ += random2D(vec2(finalZ + 5.0, finalX + 2.0));                           //random offset
 
 
 
