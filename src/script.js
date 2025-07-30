@@ -37,7 +37,7 @@ rgbeLoader.load('./purenight.hdr', (environmentMap) =>
 
 
 
-const terrainSize = 300;
+const terrainSize = 500;
 
 /**
  * Terrain
@@ -71,9 +71,9 @@ scene.add(terrain)
 
 
 const grassWidth = 0.2;
-const grassHeight = 1.0;
-const grassDensity = 1.0;
-let numOfGrass = 10000; //minimum [SQROOT(terrainSize)] if 1 grass blade per meter or more
+const grassHeight = 3.0;
+const grassDensity = 3.0;
+let numOfGrass = 700000; //minimum [SQROOT(terrainSize)] if 1 grass blade per meter or more
 
 if (numOfGrass < (terrainSize * terrainSize * grassDensity))
     numOfGrass = terrainSize * terrainSize * grassDensity;

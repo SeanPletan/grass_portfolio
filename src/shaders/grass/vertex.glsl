@@ -32,11 +32,14 @@ void getGrassPosition(int instanceID, out vec3 offset, out float heightScale) {
     finalZ += random2D(vec2(finalZ + 5.0, finalX + 2.0));                           //random offset
 
 
-    heightScale = abs(3.0 * snoise(vec2(finalX, finalZ) * 0.04));
+    heightScale = random(vec3(finalX, 50.0, finalZ)) * 3.0 * snoise(vec2(finalX, finalZ) * 0.015);
+
+    if (heightScale < 1.0)
+    heightScale = random(vec3(finalX, 70.0, finalZ)) * 1.0;
 
     // Elevation lookup
-    float finalY = getElevation(vec3(finalX, - finalZ, 0.0)); //z axis is flipped, so I unflipped it. Not sure why it is flipped.
-    finalY += abs(uGrassHeight * heightScale); //make the bottom of the grass level with terrain
+    float finalY = getElevation(vec3(finalX, - finalZ, 0.0));// + abs(random2D(vec2(finalX, finalZ))); //z axis is flipped, so I unflipped it. Not sure why it is flipped.
+    finalY += uGrassHeight * heightScale / 2.0; //make the bottom of the grass level with terrain
 
 
     offset = vec3(finalX, finalY, finalZ);
@@ -64,7 +67,7 @@ void main() {
 
 
     
-    vec3 scaled = vec3(position.x, position.y * uGrassHeight * heightScale, position.z);
+    vec3 scaled = vec3(position.x, position.y * heightScale, position.z);
 
     // Apply rotation AFTER offset, to vertex in local space
     vec3 rotated = rotY * scaled;
