@@ -37,7 +37,7 @@ rgbeLoader.load('./purenight.hdr', (environmentMap) =>
 
 
 
-const terrainSize = 500;
+const terrainSize = 1000;
 
 /**
  * Terrain
@@ -52,14 +52,14 @@ const terrainMaterial = new CustomShaderMaterial({
     wireframe: false,
     roughness: 0.9,
     metalness: 0.0,
-    side: THREE.DoubleSide,
+    side: THREE.FrontSide,
     color: new THREE.Color('rgb(92, 64, 51)'),
 })
 
 const depthMaterial = new CustomShaderMaterial({
     baseMaterial: THREE.MeshDepthMaterial,
     vertexShader: terrainVertexShader,
-    depthPacking: THREE.RGBADepthPacking //The depthPacking is an algorithm used by Three.js to encode the depth in all 4 channels instead of a grayscale depth, which improves the precision.
+    //depthPacking: THREE.RGBADepthPacking //The depthPacking is an algorithm used by Three.js to encode the depth in all 4 channels instead of a grayscale depth, which improves the precision.
 })
 
 const terrain = new THREE.Mesh(terrainGeometry, terrainMaterial)
@@ -70,10 +70,10 @@ scene.add(terrain)
 
 
 
-const grassWidth = 0.2;
+const grassWidth = 0.15;
 const grassHeight = 3.0;
-const grassDensity = 3.0;
-let numOfGrass = 700000; //minimum [SQROOT(terrainSize)] if 1 grass blade per meter or more
+const grassDensity = 2.5;
+let numOfGrass = 700000;
 
 if (numOfGrass < (terrainSize * terrainSize * grassDensity))
     numOfGrass = terrainSize * terrainSize * grassDensity;
