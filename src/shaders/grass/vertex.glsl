@@ -16,7 +16,7 @@ float random2D(vec2 st) {
 // Returns XZ offset
 void getGrassPosition(int instanceID, out vec3 offset, out float heightScale) {
     float instance = float(instanceID);
-
+    float probability;
 
 
     float finalX = mod(instance, (uTerrainSize * uGrassDensity));                //divides into rows (terainSize * grassDensity = numOfRows)
@@ -32,10 +32,18 @@ void getGrassPosition(int instanceID, out vec3 offset, out float heightScale) {
     finalZ += random2D(vec2(finalZ + 5.0, finalX + 2.0));                           //random offset
 
 
+
     heightScale = random(vec3(finalX, 50.0, finalZ)) * 3.0 * snoise(vec2(finalX, finalZ) * 0.015);
 
+    //random height base value
     if (heightScale < 1.0)
     heightScale = random(vec3(finalX, 70.0, finalZ)) * 1.0;
+
+    //random culling. further breaks homogeny. remove if final output looks gross.
+    probability = snoise(vec2(finalX + 500.0, finalZ - 500.0) * 0.008);
+    if (probability > random(vec3(finalX, - 70.0, finalZ)) + 0.2)
+        heightScale = 0.0;
+
 
     // Elevation lookup
     float finalY = getElevation(vec3(finalX, - finalZ, 0.0));// + abs(random2D(vec2(finalX, finalZ))); //z axis is flipped, so I unflipped it. Not sure why it is flipped.

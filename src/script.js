@@ -41,53 +41,7 @@ rgbeLoader.load('./purenight.hdr', (environmentMap) =>
  */
 const gltfLoader = new GLTFLoader()
 
-const terrainSize = 500;
-const grassWidth = 0.2;
-const grassHeight = 3.0;
-const grassDensity = 3.0;
-let numOfGrass = 700000; //minimum [SQROOT(terrainSize)] if 1 grass blade per meter or more
-if (numOfGrass < (terrainSize * terrainSize * grassDensity))
-    numOfGrass = terrainSize * terrainSize * grassDensity;
-
-
-
-gltfLoader.load(
-    './grass-z.glb',
-    (gltf) =>
-    {
-        const mesh = gltf.scene.children[0];
-    mesh.geometry.computeBoundingBox();
-    console.log(mesh.geometry.boundingBox);  // check min/max in each axis
-
-
-        const grassGeometry = gltf.scene.children[0].geometry;
-
-        const grassMaterial = new CustomShaderMaterial({
-            baseMaterial: THREE.MeshStandardMaterial,
-            vertexShader: grassVertexShader,
-            fragmentShader: grassFragmentShader,
-            uniforms:{
-                uGrassHeight: {value: grassHeight},
-                uNumOfGrass: {value: numOfGrass},
-                uTerrainSize: {value: terrainSize},
-                uGrassDensity: {value: grassDensity}
-            },
-            wireframe: false,
-            roughness: 1.0,
-            metalness: 0.0,
-            side: THREE.DoubleSide,
-            color: new THREE.Color('rgb(57, 145, 22)')
-        })
-        
-        
-        const instancedMesh = new THREE.InstancedMesh(grassGeometry, grassMaterial, numOfGrass);
-        scene.add(instancedMesh);
-    }
-)
-
-
-
-
+const terrainSize = 1000;
 
 /**
  * Terrain
@@ -102,14 +56,14 @@ const terrainMaterial = new CustomShaderMaterial({
     wireframe: false,
     roughness: 0.9,
     metalness: 0.0,
-    side: THREE.DoubleSide,
+    side: THREE.FrontSide,
     color: new THREE.Color('rgb(92, 64, 51)'),
 })
 
 const depthMaterial = new CustomShaderMaterial({
     baseMaterial: THREE.MeshDepthMaterial,
     vertexShader: terrainVertexShader,
-    depthPacking: THREE.RGBADepthPacking //The depthPacking is an algorithm used by Three.js to encode the depth in all 4 channels instead of a grayscale depth, which improves the precision.
+    //depthPacking: THREE.RGBADepthPacking //The depthPacking is an algorithm used by Three.js to encode the depth in all 4 channels instead of a grayscale depth, which improves the precision.
 })
 
 const terrain = new THREE.Mesh(terrainGeometry, terrainMaterial)
@@ -120,6 +74,10 @@ scene.add(terrain)
 
 
 
+const grassWidth = 0.15;
+const grassHeight = 3.0;
+const grassDensity = 2.5;
+let numOfGrass = 700000;
 
 
 const grassGeometry = new THREE.PlaneGeometry(grassWidth, grassHeight);
