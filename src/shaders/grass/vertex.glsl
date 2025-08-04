@@ -33,22 +33,23 @@ void getGrassPosition(int instanceID, out vec3 offset, out float heightScale) {
 
 
 
-    heightScale = random(vec3(finalX, 50.0, finalZ)) * 3.0 * snoise(vec2(finalX, finalZ) * 0.015);
+    heightScale = random(vec3(finalX, 50.0, finalZ)) * 5.0 * snoise(vec2(finalX, finalZ) * 0.015);
 
     //random height base value
     if (heightScale < 1.0)
-    heightScale = random(vec3(finalX, 70.0, finalZ)) * 1.0;
+    heightScale = random(vec3(finalX, 70.0, finalZ)) + 1.0;
 
     //random culling. further breaks homogeny. remove if final output looks gross.
-    probability = snoise(vec2(finalX + 500.0, finalZ - 500.0) * 0.008);
-    if (probability > random(vec3(finalX, - 70.0, finalZ)) + 0.2)
-        heightScale = 0.0;
+    //TODO: Just make finalX and finalZ random in [(0,0):(500,500)]. Mimic lines 22-32
+    //or just keep it commented out. why take away grass? looks worse.
+    
+    // probability = snoise(vec2(finalX + 500.0, finalZ - 500.0) * 0.008);
+    // if (probability > random(vec3(finalX, - 70.0, finalZ)) + 0.2)
+    //     heightScale = -1.0;
 
 
     // Elevation lookup
     float finalY = getElevation(vec3(finalX, - finalZ, 0.0));// + abs(random2D(vec2(finalX, finalZ))); //z axis is flipped, so I unflipped it. Not sure why it is flipped.
-    finalY += uGrassHeight * heightScale / 2.0; //make the bottom of the grass level with terrain
-
 
     offset = vec3(finalX, finalY, finalZ);
 }
@@ -73,12 +74,8 @@ void main() {
     getGrassPosition(gl_InstanceID, offset, heightScale);
     getGrassAngle(offset, rotY);
 
-
-    
-    vec3 scaled = vec3(position.x, position.y * heightScale, position.z);
-
     // Apply rotation AFTER offset, to vertex in local space
-    vec3 rotated = rotY * scaled;
+    vec3 rotated = rotY * vec3(position.x, position.y * heightScale, position.z);
     
     // final position
     csm_Position = rotated + offset;

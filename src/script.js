@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { RGBELoader } from 'three/addons/loaders/RGBELoader.js'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import Stats from 'stats.js';
 import CustomShaderMaterial from 'three-custom-shader-material/vanilla'
 import terrainVertexShader from './shaders/terrain/vertex.glsl'
@@ -36,8 +37,49 @@ rgbeLoader.load('./purenight.hdr', (environmentMap) =>
 })
 
 
+/**
+ * Models
+ */
+const gltfLoader = new GLTFLoader()
 
-const terrainSize = 1000;
+const terrainSize = 300;
+const grassWidth = 0.2;
+const grassHeight = 1.0;
+const grassDensity = 6.0;
+let numOfGrass = 700; //minimum [SQROOT(terrainSize)] if 1 grass blade per meter or more
+if (numOfGrass < (terrainSize * terrainSize * grassDensity))
+    numOfGrass = terrainSize * terrainSize * grassDensity;
+
+//250,000 grass blades
+
+gltfLoader.load(
+    './grass-z.glb',
+    (gltf) =>
+    {
+        const grassGeometry = gltf.scene.children[0].geometry;
+
+        const grassMaterial = new CustomShaderMaterial({
+            baseMaterial: THREE.MeshStandardMaterial,
+            vertexShader: grassVertexShader,
+            fragmentShader: grassFragmentShader,
+            uniforms:{
+                uGrassHeight: {value: grassHeight},
+                uNumOfGrass: {value: numOfGrass},
+                uTerrainSize: {value: terrainSize},
+                uGrassDensity: {value: grassDensity}
+            },
+            wireframe: false,
+            roughness: 1.0,
+            metalness: 0.0,
+            side: THREE.DoubleSide,
+            color: new THREE.Color('rgb(57, 145, 22)')
+        })
+        
+        
+        const instancedMesh = new THREE.InstancedMesh(grassGeometry, grassMaterial, numOfGrass);
+        scene.add(instancedMesh);
+    }
+)
 
 /**
  * Terrain
@@ -70,41 +112,6 @@ scene.add(terrain)
 
 
 
-const grassWidth = 0.15;
-const grassHeight = 3.0;
-const grassDensity = 2.5;
-let numOfGrass = 700000;
-
-if (numOfGrass < (terrainSize * terrainSize * grassDensity))
-    numOfGrass = terrainSize * terrainSize * grassDensity;
-
-const grassGeometry = new THREE.PlaneGeometry(grassWidth, grassHeight);
-
-const grassMaterial = new CustomShaderMaterial({
-    baseMaterial: THREE.MeshStandardMaterial,
-    vertexShader: grassVertexShader,
-    fragmentShader: grassFragmentShader,
-    uniforms:{
-        uGrassHeight: {value: grassHeight},
-        uNumOfGrass: {value: numOfGrass},
-        uTerrainSize: {value: terrainSize},
-        uGrassDensity: {value: grassDensity}
-    },
-    wireframe: false,
-    roughness: 1.0,
-    metalness: 0.0,
-    side: THREE.DoubleSide,
-    color: new THREE.Color('rgb(57, 145, 22)')
-})
-
-
-const instancedMesh = new THREE.InstancedMesh(grassGeometry, grassMaterial, numOfGrass);
-//instancedMesh.instanceMatrix.setUsage(THREE.StaticDrawUsage);
-scene.add(instancedMesh);
-
-
-
-
 
 
 
@@ -132,7 +139,7 @@ window.addEventListener('resize', () =>
 /**
  * Camera
  */
-const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1)
+const camera = new THREE.PerspectiveCamera(100, sizes.width / sizes.height, 0.1)
 camera.position.set(-330, 200, 0)
 //camera.position.set(0, 20, 40)
 scene.add(camera)
