@@ -34,11 +34,11 @@ void getGrassPosition(int instanceID, out vec3 offset, out float heightScale, ou
 
 
 
-    heightScale = random(vec3(finalX, 50.0, finalZ)) * 5.0 * snoise(vec2(finalX, finalZ) * 0.015);
+    heightScale = random(vec3(finalX, 50.0, finalZ)) * 5.0 * uGrassHeight * snoise(vec2(finalX, finalZ) * 0.015);
 
     //random height base value
     if (heightScale < 1.0)
-    heightScale = random(vec3(finalX, 70.0, finalZ)) + 1.0;
+    heightScale = (random(vec3(finalX, 70.0, finalZ)) + 1.0) * uGrassHeight;
 
     //random culling. further breaks homogeny. remove if final output looks gross.
     //TODO: Just make finalX and finalZ random in [(0,0):(500,500)]. Mimic lines 22-32
@@ -51,6 +51,8 @@ void getGrassPosition(int instanceID, out vec3 offset, out float heightScale, ou
 
     // Elevation lookup
     finalY = getElevation(vec3(finalX, - finalZ, 0.0));//z axis is flipped, so I unflipped it. Not sure why it is flipped.
+
+    finalY += 1.6; //EXTREMELY TEMP FIX DELETE ASAP
 
     float bend = vert * vert * sin(uTime) * 0.25;
 

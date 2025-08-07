@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-//import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { RGBELoader } from 'three/addons/loaders/RGBELoader.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import Stats from 'stats.js';
@@ -43,9 +43,8 @@ rgbeLoader.load('./purenight.hdr', (environmentMap) =>
 const gltfLoader = new GLTFLoader()
 
 const terrainSize = 500;
-const grassWidth = 0.2;
 const grassHeight = 1.0;
-const grassDensity = 6.0;
+const grassDensity = 10.0;
 let numOfGrass = 700; //minimum [SQROOT(terrainSize)] if 1 grass blade per meter or more
 if (numOfGrass < (terrainSize * terrainSize * grassDensity))
     numOfGrass = terrainSize * terrainSize * grassDensity;
@@ -68,6 +67,12 @@ const grassMaterial = new CustomShaderMaterial({
             color: new THREE.Color('rgb(57, 145, 22)')
         })
 
+const grassDepthMaterial = new CustomShaderMaterial({
+    baseMaterial: THREE.MeshDepthMaterial,
+    vertexShader: grassVertexShader,
+    //depthPacking: THREE.RGBADepthPacking //The depthPacking is an algorithm used by Three.js to encode the depth in all 4 channels instead of a grayscale depth, which improves the precision.
+})
+
 //250,000 grass blades
 
 gltfLoader.load(
@@ -80,6 +85,7 @@ gltfLoader.load(
         
         
         const instancedMesh = new THREE.InstancedMesh(grassGeometry, grassMaterial, numOfGrass);
+        instancedMesh.customDepthMaterial = grassDepthMaterial //maybe delete????
         scene.add(instancedMesh);
     }
 )
@@ -101,14 +107,14 @@ const terrainMaterial = new CustomShaderMaterial({
     color: new THREE.Color('rgb(92, 64, 51)'),
 })
 
-const depthMaterial = new CustomShaderMaterial({
+const terrainDepthMaterial = new CustomShaderMaterial({
     baseMaterial: THREE.MeshDepthMaterial,
     vertexShader: terrainVertexShader,
     //depthPacking: THREE.RGBADepthPacking //The depthPacking is an algorithm used by Three.js to encode the depth in all 4 channels instead of a grayscale depth, which improves the precision.
 })
 
 const terrain = new THREE.Mesh(terrainGeometry, terrainMaterial)
-terrain.customDepthMaterial = depthMaterial
+terrain.customDepthMaterial = terrainDepthMaterial
 terrain.rotation.x = - Math.PI * 0.5
 scene.add(terrain)
 
@@ -155,8 +161,8 @@ camera.position.set(-100, 10, -185)
 camera.lookAt(-50,0,0)
 scene.add(camera)
 // Controls
-//const controls = new OrbitControls(camera, canvas)
-//controls.enableDamping = true
+const controls = new OrbitControls(camera, canvas)
+controls.enableDamping = true
 /**
  * Renderer
  */
@@ -173,7 +179,7 @@ const clock = new THREE.Clock()
 const tick = () =>
 {
     stats.begin();
-    //controls.update();
+    controls.update();
     const elapsedTime = clock.getElapsedTime();
     grassMaterial.uniforms.uTime.value = elapsedTime;
     renderer.render(scene, camera);
