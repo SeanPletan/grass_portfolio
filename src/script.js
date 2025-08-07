@@ -71,7 +71,7 @@ const grassMaterial = new CustomShaderMaterial({
 //250,000 grass blades
 
 gltfLoader.load(
-    './grass-z.glb',
+    './grass_short.glb',
     (gltf) =>
     {
         const grassGeometry = gltf.scene.children[0].geometry;
