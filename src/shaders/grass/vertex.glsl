@@ -4,6 +4,7 @@ uniform float uGrassHeight;
 uniform float uGrassDensity;
 uniform float uNumOfGrass;
 uniform float uTerrainSize;
+uniform float uTime;
 
 float random(vec3 p) {
     return fract(sin(dot(p.xyz, vec3(12.9898, 78.233, 54.53))) * 43758.5453);
@@ -14,13 +15,13 @@ float random2D(vec2 st) {
 }
 
 // Returns XZ offset
-void getGrassPosition(int instanceID, out vec3 offset, out float heightScale) {
+void getGrassPosition(int instanceID, out vec3 offset, out float heightScale, out float finalX, out float finalY, out float finalZ) {
     float instance = float(instanceID);
     float probability;
+    float vert = position.y;
 
-
-    float finalX = mod(instance, (uTerrainSize * uGrassDensity));                //divides into rows (terainSize * grassDensity = numOfRows)
-    float finalZ = instance / ((uNumOfGrass / uGrassDensity) / uTerrainSize);    //divides into cols (terainSize * grassDensity = numOfCols)
+    finalX = mod(instance, (uTerrainSize * uGrassDensity));                //divides into rows (terainSize * grassDensity = numOfRows)
+    finalZ = instance / ((uNumOfGrass / uGrassDensity) / uTerrainSize);    //divides into cols (terainSize * grassDensity = numOfCols)
 
     finalX /= uGrassDensity;                                                         //centers onto terrain 
     finalZ /= uGrassDensity;                                                         //centers onto terrain 
@@ -49,9 +50,11 @@ void getGrassPosition(int instanceID, out vec3 offset, out float heightScale) {
 
 
     // Elevation lookup
-    float finalY = getElevation(vec3(finalX, - finalZ, 0.0));// + abs(random2D(vec2(finalX, finalZ))); //z axis is flipped, so I unflipped it. Not sure why it is flipped.
+    finalY = getElevation(vec3(finalX, - finalZ, 0.0));//z axis is flipped, so I unflipped it. Not sure why it is flipped.
 
-    offset = vec3(finalX, finalY, finalZ);
+    float bend = vert * vert * sin(uTime) * 0.25;
+
+    offset = vec3(finalX, finalY, finalZ + bend);
 }
 
 void getGrassAngle(vec3 p, out mat3 rotY) {
@@ -71,8 +74,9 @@ void main() {
     vec3 offset;
     mat3 rotY;
     float heightScale;
-    getGrassPosition(gl_InstanceID, offset, heightScale);
-    getGrassAngle(offset, rotY);
+    float finalX, finalY, finalZ;
+    getGrassPosition(gl_InstanceID, offset, heightScale, finalX, finalY, finalZ);
+    getGrassAngle(vec3(finalX, finalY, finalZ), rotY);
 
     // Apply rotation AFTER offset, to vertex in local space
     vec3 rotated = rotY * vec3(position.x, position.y * heightScale, position.z);

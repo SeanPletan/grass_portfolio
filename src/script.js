@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+//import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { RGBELoader } from 'three/addons/loaders/RGBELoader.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import Stats from 'stats.js';
@@ -42,13 +42,31 @@ rgbeLoader.load('./purenight.hdr', (environmentMap) =>
  */
 const gltfLoader = new GLTFLoader()
 
-const terrainSize = 300;
+const terrainSize = 500;
 const grassWidth = 0.2;
 const grassHeight = 1.0;
 const grassDensity = 6.0;
 let numOfGrass = 700; //minimum [SQROOT(terrainSize)] if 1 grass blade per meter or more
 if (numOfGrass < (terrainSize * terrainSize * grassDensity))
     numOfGrass = terrainSize * terrainSize * grassDensity;
+
+const grassMaterial = new CustomShaderMaterial({
+            baseMaterial: THREE.MeshStandardMaterial,
+            vertexShader: grassVertexShader,
+            fragmentShader: grassFragmentShader,
+            uniforms:{
+                uGrassHeight: {value: grassHeight},
+                uNumOfGrass: {value: numOfGrass},
+                uTerrainSize: {value: terrainSize},
+                uGrassDensity: {value: grassDensity},
+                uTime: {value: 0},
+            },
+            wireframe: false,
+            roughness: 1.0,
+            metalness: 0.0,
+            side: THREE.DoubleSide,
+            color: new THREE.Color('rgb(57, 145, 22)')
+        })
 
 //250,000 grass blades
 
@@ -58,22 +76,7 @@ gltfLoader.load(
     {
         const grassGeometry = gltf.scene.children[0].geometry;
 
-        const grassMaterial = new CustomShaderMaterial({
-            baseMaterial: THREE.MeshStandardMaterial,
-            vertexShader: grassVertexShader,
-            fragmentShader: grassFragmentShader,
-            uniforms:{
-                uGrassHeight: {value: grassHeight},
-                uNumOfGrass: {value: numOfGrass},
-                uTerrainSize: {value: terrainSize},
-                uGrassDensity: {value: grassDensity}
-            },
-            wireframe: false,
-            roughness: 1.0,
-            metalness: 0.0,
-            side: THREE.DoubleSide,
-            color: new THREE.Color('rgb(57, 145, 22)')
-        })
+        
         
         
         const instancedMesh = new THREE.InstancedMesh(grassGeometry, grassMaterial, numOfGrass);
@@ -110,9 +113,16 @@ terrain.rotation.x = - Math.PI * 0.5
 scene.add(terrain)
 
 
-
-
-
+const monolithGeometry = new THREE.BoxGeometry(5,40, 5);
+const monolithMaterial = new THREE.MeshPhysicalMaterial({
+    roughness: 1.0,
+})
+const monolith = new THREE.Mesh(monolithGeometry, monolithMaterial)
+monolith.position.set(-50, 8, -120)
+monolith.rotation.x = -0.1
+monolith.rotation.z = -0.12
+monolith.rotation.y = 1.0
+scene.add(monolith)
 
 
 /**
@@ -139,13 +149,14 @@ window.addEventListener('resize', () =>
 /**
  * Camera
  */
-const camera = new THREE.PerspectiveCamera(100, sizes.width / sizes.height, 0.1)
-camera.position.set(-330, 200, 0)
-//camera.position.set(0, 20, 40)
+const camera = new THREE.PerspectiveCamera(60, sizes.width / sizes.height, 0.1)
+camera.position.set(0, 150, 300)
+camera.position.set(-100, 10, -185)
+camera.lookAt(-50,0,0)
 scene.add(camera)
 // Controls
-const controls = new OrbitControls(camera, canvas)
-controls.enableDamping = true
+//const controls = new OrbitControls(camera, canvas)
+//controls.enableDamping = true
 /**
  * Renderer
  */
@@ -157,41 +168,24 @@ renderer.toneMappingExposure = 1
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
-
+const clock = new THREE.Clock()
 
 const tick = () =>
 {
     stats.begin();
-    controls.update()
+    //controls.update();
+    const elapsedTime = clock.getElapsedTime();
+    grassMaterial.uniforms.uTime.value = elapsedTime;
     renderer.render(scene, camera);
     console.log(
       'Draw calls:', renderer.info.render.calls,
-      'Triangles:', renderer.info.render.triangles
+      'Triangles:', renderer.info.render.triangles,
+      'Camera:', camera.position,
     );    
     stats.end();
     window.requestAnimationFrame(tick)
 }
 
-function runBenchmark(durationMs = 10000) {
-    const start = performance.now();
-    let frameCount = 0;
-
-    function renderLoop() {
-        const now = performance.now();
-        if (now - start < durationMs) {
-            renderer.render(scene, camera);
-            frameCount++;
-            setTimeout(renderLoop, 0); // Schedule next call, avoids recursion
-            console.log(frameCount);
-        } else {
-            const elapsed = now - start;
-            const fps = frameCount / (elapsed / 1000);
-            console.log(`Uncapped render FPS: ${fps.toFixed(2)}`);
-        }
-    }
-
-    renderLoop();
-}
 
 //console.log(renderer.info);
 //runBenchmark(); // 220-223 fps with terrain and skybox. 2 draw calls with 131084 traingles (256*256*2 + 6*2).
