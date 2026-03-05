@@ -1,22 +1,20 @@
 import * as THREE from 'three'
-import './routes/about'
-import './routes/contact'
-import './routes/projects'
+import markdownit from 'markdown-it'
+import Stats from 'stats.js';
 import { HDRLoader } from 'three/addons/loaders/HDRLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { SMAAPass } from 'three/examples/jsm/postprocessing/SMAAPass.js';
-import Stats from 'stats.js';
 import fshGrassText from './shaders/grass_fragment_shader.glsl?raw';
 import vshGrassText from './shaders/grass_vertex_shader.glsl?raw';
 import fshGroundText from './shaders/ground_fragment_shader.glsl?raw';
 import vshGroundText from './shaders/ground_vertex_shader.glsl?raw';
-import getAboutMePage from './routes/about'
+import getAboutMePage from './routes/about.md?raw'
 import getProjectsPage from './routes/projects'
-import getContactPage from './routes/contact'
-import get404Page from './routes/404';
+import getContactPage from './routes/contact.md?raw'
+import get404Page from './routes/404.md?raw';
 
 //var stats = new Stats();
 //stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
@@ -144,8 +142,31 @@ scene.add(grass);
 
 //Make Wares_Statue
 const loader = new GLTFLoader();
-const wares_stae = await loader.loadAsync( 'models/gltf/duck/duck.gltf' );
-scene.add( gltf.scene );
+const wares_statue = await loader.loadAsync( '/wares_statue.glb' );
+scene.add( wares_statue.scene );
+wares_statue.scene.scale.x = 2.5;
+wares_statue.scene.scale.y = 2.5;
+wares_statue.scene.scale.z = 2.5;
+wares_statue.scene.rotation.x = 0.2;
+wares_statue.scene.rotation.y = Math.PI + 0.6;
+wares_statue.scene.rotation.z = 0.2
+wares_statue.scene.position.y = -40;
+// wares_statue.scene.children[0].material = new THREE.MeshPhysicalMaterial({
+//      roughness: 1.0,
+//      color: new THREE.Color('white'),
+// });
+// const texloader = new THREE.TextureLoader();
+// const matcapTexture = texloader.load('/matcap.png');
+// wares_statue.scene.children[0].material.map = matcapTexture;
+// wares_statue.scene.children[0].material.needsUpdate = true;
+//console.log(wares_statue)
+
+//Make spotlight
+const light = new THREE.SpotLight(0xF4E99B, 25000);
+light.position.set(30, 40, -40);
+scene.add(light);
+const helper = new THREE.SpotLightHelper(light);
+scene.add(helper);
 
 
 
@@ -167,6 +188,7 @@ canvas.addEventListener("click", () => {
 });
 
 function handleRouteChange() {
+     const md = markdownit({ html: true, linkify: true, typographer: true, breaks: true })
      const path = window.location.pathname;
      let view;
 
@@ -177,7 +199,9 @@ function handleRouteChange() {
                document.getElementById('overlay').classList.add("overlay--hidden");
                break;
           case '/about':
-               view = getAboutMePage();
+               
+               view = md.render(getAboutMePage)
+               //view = getAboutMePage();
                document.getElementById('overlay-content').innerHTML = view;
                document.getElementById('overlay').classList.remove("overlay--hidden");
                document.getElementById('overlay').classList.add("overlay--panel");
@@ -189,13 +213,13 @@ function handleRouteChange() {
                document.getElementById('overlay').classList.add("overlay--panel");
                break;
           case '/contact':
-               view = getContactPage();
+               view = md.render(getContactPage);
                document.getElementById('overlay-content').innerHTML = view;
                document.getElementById('overlay').classList.remove("overlay--hidden");
                document.getElementById('overlay').classList.add("overlay--panel");
                break;
           default:
-               view = get404Page();
+               view = md.render(get404Page);
                document.getElementById('overlay-content').innerHTML = view;
                document.getElementById('overlay').classList.remove("overlay--hidden");
                document.getElementById('overlay').classList.add("overlay--panel");
@@ -225,7 +249,7 @@ let scrollValue = 0;
 const scrollTarget = document.getElementById('webgl');
 window.addEventListener("wheel", (event) => {
      if (event.target == scrollTarget) {
-          scrollValue += event.deltaY * 0.001;
+          scrollValue += event.deltaY * 0.0008;
           scrollValue = Math.min(Math.max(scrollValue, 0), 1);
      }
 });
@@ -304,7 +328,7 @@ const tick = () => {
      uniforms.time.value = elapsedTime;
      camera.fov = lerp(80, 100, scrollValue);
      camera.position.z = lerp(-310, -30, scrollValue);
-     camera.position.y = lerp(10, -5, scrollValue);
+     camera.position.y = lerp(-5, 5, scrollValue);
      camera.position.x = lerp(0, -30, scrollValue);
      //camera.rotation.z = lerp(-Math.PI, -Math.PI * 1.1, scrollValue);
      camera.rotation.y = lerp(0, Math.PI * -0.2, scrollValue);
