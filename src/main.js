@@ -7,10 +7,13 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { SMAAPass } from 'three/examples/jsm/postprocessing/SMAAPass.js';
+import { Cache } from 'three';
 import fshGrassText from './shaders/grass_fragment_shader.glsl?raw';
 import vshGrassText from './shaders/grass_vertex_shader.glsl?raw';
 import fshGroundText from './shaders/ground_fragment_shader.glsl?raw';
 import vshGroundText from './shaders/ground_vertex_shader.glsl?raw';
+import fshStatueText from './shaders/statue_fragment_shader.glsl?raw';
+import vshStatueText from './shaders/statue_vertex_shader.glsl?raw';
 import getAboutMePage from './routes/about.md?raw'
 import getProjectsPage from './routes/projects'
 import getContactPage from './routes/contact.md?raw'
@@ -31,6 +34,7 @@ const screenSizes = {
 };
 renderer.setSize(screenSizes.width, screenSizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+Cache.enabled = true;
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 
@@ -102,20 +106,19 @@ scene.add(ground);
 const hdrLoader = new HDRLoader();
 const envMap = await hdrLoader.loadAsync('/puresky.hdr');
 envMap.mapping = THREE.EquirectangularReflectionMapping;
-scene.environment = envMap;
+//scene.environment = envMap; //nothing is using three.js' lighting. its all shader work
 scene.background = envMap;
 //scene.background *= 1.0;
 scene.backgroundRotation.y += (Math.PI * 1.125);
-scene.environmentRotation.y += (Math.PI * 1.125);
 
 //Make grass
-const uniforms = {
+const grassUniforms = {
      grassParams: { value: new THREE.Vector4(GRASS_SEGMENTS, GRASS_PATCH_SIZE, GRASS_WIDTH, GRASS_HEIGHT) },
      time: { value: 0 },
      resolution: { value: new THREE.Vector2(1, 1) },
 };
 const grassMaterial = new THREE.ShaderMaterial({
-     uniforms: uniforms,
+     uniforms: grassUniforms,
      vertexShader: vshGrassText,
      fragmentShader: fshGrassText,
      side: THREE.FrontSide,
@@ -140,33 +143,54 @@ scene.add(grass);
 //monolith.userData.clickable = true;
 //clickable.push(monolith)
 
-//Make Wares_Statue
+//Make statue AND bake in transformations for future bug-prevention
+const statueUniforms = {
+     time: { value: 0 },
+};
+
+const statueMaterial = new THREE.ShaderMaterial({
+     uniforms: statueUniforms,
+     vertexShader: vshStatueText,
+     fragmentShader: fshStatueText,
+     side: THREE.DoubleSide,
+});
+
 const loader = new GLTFLoader();
-const wares_statue = await loader.loadAsync( '/wares_statue.glb' );
-scene.add( wares_statue.scene );
-wares_statue.scene.scale.x = 2.5;
-wares_statue.scene.scale.y = 2.5;
-wares_statue.scene.scale.z = 2.5;
-wares_statue.scene.rotation.x = 0.2;
-wares_statue.scene.rotation.y = Math.PI + 0.6;
-wares_statue.scene.rotation.z = 0.2
-wares_statue.scene.position.y = -40;
-// wares_statue.scene.children[0].material = new THREE.MeshPhysicalMaterial({
-//      roughness: 1.0,
-//      color: new THREE.Color('white'),
-// });
-// const texloader = new THREE.TextureLoader();
-// const matcapTexture = texloader.load('/matcap.png');
-// wares_statue.scene.children[0].material.map = matcapTexture;
-// wares_statue.scene.children[0].material.needsUpdate = true;
-//console.log(wares_statue)
+const gltf = await loader.loadAsync('/bust_statue.glb');
+const statue = gltf.scene;
+
+// Add to scene first (optional)
+scene.add(statue);
+
+// Bake transformations
+statue.matrixAutoUpdate = false;
+statue.scale.set(5, 5, 5);
+statue.rotation.set(0.2, Math.PI + 0.6, 0.2);
+statue.position.y = -365;
+statue.updateMatrix();
+
+statue.traverse((child) => {
+     if (child.isMesh) {
+          // Apply matrix to geometry
+          child.geometry.applyMatrix4(child.matrix);
+          child.geometry.computeVertexNormals(); // fix normals after baking
+
+          // Reset transforms
+          child.scale.set(1, 1, 1);
+          child.rotation.set(0, 0, 0);
+          child.position.set(0, 0, 0);
+          child.updateMatrix();
+
+          child.material = statueMaterial;
+     }
+});
 
 //Make spotlight
-const light = new THREE.SpotLight(0xF4E99B, 25000);
-light.position.set(30, 40, -40);
-scene.add(light);
-const helper = new THREE.SpotLightHelper(light);
-scene.add(helper);
+// const light = new THREE.SpotLight(0xF4E99B, 15000);
+// light.position.set(-30, 80, -40);
+// scene.add(light);
+// const helper = new THREE.SpotLightHelper(light);
+// scene.add(helper);
 
 
 
@@ -325,7 +349,7 @@ const tick = () => {
      //stats.begin();
      timer.update();
      const elapsedTime = timer.getElapsed();
-     uniforms.time.value = elapsedTime;
+     grassUniforms.time.value = elapsedTime;
      camera.fov = lerp(80, 100, scrollValue);
      camera.position.z = lerp(-310, -30, scrollValue);
      camera.position.y = lerp(-5, 5, scrollValue);
