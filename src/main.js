@@ -108,8 +108,8 @@ const envMap = await hdrLoader.loadAsync('/puresky.hdr');
 envMap.mapping = THREE.EquirectangularReflectionMapping;
 //scene.environment = envMap; //nothing is using three.js' lighting. its all shader work
 scene.background = envMap;
-//scene.background *= 1.0;
 scene.backgroundRotation.y += (Math.PI * 1.125);
+
 
 //Make grass
 const grassUniforms = {
@@ -128,38 +128,21 @@ const grass = new THREE.Mesh(grassGeometry, grassMaterial);
 scene.add(grass);
 
 
-//Make monolith
-//const monolithGeometry = new THREE.BoxGeometry(10, 75, 10);
-//const monolithMaterial = new THREE.MeshPhysicalMaterial({
-//     roughness: 1.0,
-//     color: new THREE.Color('white'),
-//})
-//const monolith = new THREE.Mesh(monolithGeometry, monolithMaterial)
-//monolith.position.set(0, 0, 0)
-//monolith.rotation.x = 0.2
-//monolith.rotation.z = -0.2
-//monolith.rotation.y = 0.3
-//scene.add(monolith)
-//monolith.userData.clickable = true;
-//clickable.push(monolith)
-
 //Make statue AND bake in transformations for future bug-prevention
 const statueUniforms = {
      time: { value: 0 },
+     minY: { value: 0.0 },
+     maxY: {value: 0.0 },
 };
-
 const statueMaterial = new THREE.ShaderMaterial({
      uniforms: statueUniforms,
      vertexShader: vshStatueText,
      fragmentShader: fshStatueText,
      side: THREE.DoubleSide,
 });
-
 const loader = new GLTFLoader();
 const gltf = await loader.loadAsync('/bust_statue.glb');
 const statue = gltf.scene;
-
-// Add to scene first (optional)
 scene.add(statue);
 
 // Bake transformations
@@ -174,6 +157,10 @@ statue.traverse((child) => {
           // Apply matrix to geometry
           child.geometry.applyMatrix4(child.matrix);
           child.geometry.computeVertexNormals(); // fix normals after baking
+          child.geometry.computeBoundingBox();
+          const bbox = child.geometry.boundingBox;
+          statueUniforms.minY.value = bbox.min.y;
+          statueUniforms.maxY.value = bbox.max.y;
 
           // Reset transforms
           child.scale.set(1, 1, 1);
@@ -184,15 +171,6 @@ statue.traverse((child) => {
           child.material = statueMaterial;
      }
 });
-
-//Make spotlight
-// const light = new THREE.SpotLight(0xF4E99B, 15000);
-// light.position.set(-30, 80, -40);
-// scene.add(light);
-// const helper = new THREE.SpotLightHelper(light);
-// scene.add(helper);
-
-
 
 
 const camera = new THREE.PerspectiveCamera(80, screenSizes.width / screenSizes.height, 0.1, 750);
@@ -223,7 +201,7 @@ function handleRouteChange() {
                document.getElementById('overlay').classList.add("overlay--hidden");
                break;
           case '/about':
-               
+
                view = md.render(getAboutMePage)
                //view = getAboutMePage();
                document.getElementById('overlay-content').innerHTML = view;
@@ -349,7 +327,7 @@ const tick = () => {
      //stats.begin();
      timer.update();
      const elapsedTime = timer.getElapsed();
-     grassUniforms.time.value = elapsedTime;
+     grassUniforms.time.value = statueUniforms.time.value = elapsedTime;
      camera.fov = lerp(80, 100, scrollValue);
      camera.position.z = lerp(-310, -30, scrollValue);
      camera.position.y = lerp(-5, 5, scrollValue);
@@ -360,7 +338,7 @@ const tick = () => {
      camera.updateProjectionMatrix();
 
 
-     // 🔥 UI trigger logic
+     // UI trigger logic
      if (scrollValue > threshold && !uiShown) {
           nav.classList.add("show-ui");
           name.classList.add("show-ui");

@@ -1,5 +1,9 @@
 varying vec2 vUv;
+varying float vHeight;
 
-void main(){
-     gl_FragColor=vec4(vec2(vUv),1.,1.);
+void main() {
+     float strength=mod(vHeight*10.,1.);
+     strength=step(.5,strength);
+
+     gl_FragColor=vec4(vec3(strength), 1.0);
 }
