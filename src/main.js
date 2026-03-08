@@ -256,8 +256,8 @@ window.addEventListener("wheel", (event) => {
      }
 });
 
-//const controls = new OrbitControls(camera, canvas);
-//controls.target.set(0, 5, 0);
+const controls = new OrbitControls(camera, canvas);
+
 
 
 const renderPass = new RenderPass(scene, camera);
@@ -325,17 +325,18 @@ function handleExpand() {
 
 const tick = () => {
      //stats.begin();
+     controls.update;
      timer.update();
      const elapsedTime = timer.getElapsed();
      grassUniforms.time.value = statueUniforms.time.value = elapsedTime;
-     camera.fov = lerp(80, 100, scrollValue);
-     camera.position.z = lerp(-310, -30, scrollValue);
-     camera.position.y = lerp(-5, 5, scrollValue);
-     camera.position.x = lerp(0, -30, scrollValue);
-     //camera.rotation.z = lerp(-Math.PI, -Math.PI * 1.1, scrollValue);
-     camera.rotation.y = lerp(0, Math.PI * -0.2, scrollValue);
-     //camera.rotation.x = lerp(Math.PI, Math.PI * 0.8, scrollValue);
-     camera.updateProjectionMatrix();
+     // camera.fov = lerp(80, 100, scrollValue);
+     // camera.position.z = lerp(-310, -30, scrollValue);
+     // camera.position.y = lerp(-5, 5, scrollValue);
+     // camera.position.x = lerp(0, -30, scrollValue);
+     // //camera.rotation.z = lerp(-Math.PI, -Math.PI * 1.1, scrollValue);
+     // camera.rotation.y = lerp(0, Math.PI * -0.2, scrollValue);
+     // //camera.rotation.x = lerp(Math.PI, Math.PI * 0.8, scrollValue);
+     // camera.updateProjectionMatrix();
 
 
      // UI trigger logic
