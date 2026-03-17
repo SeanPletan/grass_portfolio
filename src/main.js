@@ -312,27 +312,6 @@ document.addEventListener("click", function (e) {
      }
 });
 
-// const icon = document.getElementById("fullscreen");
-// const expandPath = document.getElementById("expand-path");
-// const collapsePath = document.getElementById("collapse-path");
-// let fullscreen = false;
-// if (icon) {
-//      icon.addEventListener("click", () => {
-//           if (!fullscreen) {
-//                expandPath.style.visibility = "hidden";
-//                collapsePath.style.visibility = "visible";
-//                fullscreen = true;
-//                console.log(expandPath, collapsePath);
-//           } else {
-//                expandPath.style.visibility = "visible";
-//                collapsePath.style.visibility = "hidden";
-//                fullscreen = false;
-//                console.log(icon, expandPath, collapsePath);
-//           }
-//           console.log("fullscreen", fullscreen);
-//      });
-// }
-
 
 //TODO: Use URL query parameters to track expanded state
 let expanded = false;

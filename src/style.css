@@ -92,6 +92,12 @@ a {
      margin: 20px;
      
 }
+#not-found-heading {
+     display: flex;
+     justify-content: space-between;
+     align-items: center;
+     margin: 20px;
+}
 
 #overlay-content > h1 {
      margin: 20px 0px 20px 20px;
