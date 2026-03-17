@@ -238,6 +238,9 @@ function handleRouteChange() {
                document.getElementById("overlay-content").innerHTML = view;
                document.getElementById("overlay").classList.remove("overlay--hidden");
                document.getElementById("overlay").classList.add("overlay--panel");
+               const icon = document.getElementById("fullscreen");
+               const expandPath = document.getElementById("expand-path");
+               const collapsePath = document.getElementById("collapse-path");
                break;
           case "/contact":
                view = md.render(getContactPage);
