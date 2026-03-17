@@ -12,8 +12,6 @@ import fshGrassText from "./shaders/grass_fragment_shader.glsl?raw";
 import vshGrassText from "./shaders/grass_vertex_shader.glsl?raw";
 import fshGroundText from "./shaders/ground_fragment_shader.glsl?raw";
 import vshGroundText from "./shaders/ground_vertex_shader.glsl?raw";
-import fshStatueText from "./shaders/statue_fragment_shader.glsl?raw";
-import vshStatueText from "./shaders/statue_vertex_shader.glsl?raw";
 import getAboutMePage from "./routes/about.md?raw";
 import getProjectsPage from "./routes/projects";
 import getContactPage from "./routes/contact.md?raw";
@@ -33,6 +31,8 @@ const screenSizes = {
 renderer.setSize(screenSizes.width, screenSizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 Cache.enabled = true;
+const light = new THREE.AmbientLight(0x404040, 300); // soft white light
+scene.add(light);
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 
@@ -80,13 +80,12 @@ function createGeometry(segments) {
 }
 
 //Make ground
-const terrainDiffuse = new THREE.TextureLoader().load(
-     "/terrainTexture/Terrain_Texture_BaseColor.png",
-);
+const terrainDiffuse = new THREE.TextureLoader().load("/terrainTexture/Terrain_Texture_BaseColor.png");
 terrainDiffuse.wrapS = THREE.RepeatWrapping;
 terrainDiffuse.wrapT = THREE.RepeatWrapping;
 const groundMaterial = new THREE.ShaderMaterial({
-     uniforms: {
+     uniforms: 
+     {
           uTerrainTexture: { value: terrainDiffuse },
           uTileScale: { value: 30.0 },
      },
@@ -96,8 +95,8 @@ const groundMaterial = new THREE.ShaderMaterial({
 const groundGeometry = new THREE.PlaneGeometry(
      GRASS_PATCH_SIZE * 2,
      GRASS_PATCH_SIZE * 2,
-     512,
-     512,
+     256,
+     256,
 );
 const ground = new THREE.Mesh(groundGeometry, groundMaterial);
 ground.rotateX(-Math.PI / 2);
@@ -107,22 +106,14 @@ scene.add(ground);
 const hdrLoader = new HDRLoader();
 const envMap = await hdrLoader.loadAsync("/puresky.hdr");
 envMap.mapping = THREE.EquirectangularReflectionMapping;
-//scene.environment = envMap; //nothing is using three.js' lighting. its all shader work
+scene.environment = envMap;
 scene.background = envMap;
 scene.backgroundRotation.y += Math.PI * 1.125;
 
 //Make grass
 const grassUniforms = {
-     grassParams: {
-          value: new THREE.Vector4(
-               GRASS_SEGMENTS,
-               GRASS_PATCH_SIZE,
-               GRASS_WIDTH,
-               GRASS_HEIGHT,
-          ),
-     },
-     time: { value: 0 },
-     resolution: { value: new THREE.Vector2(1, 1) },
+     grassParams: { value: new THREE.Vector4(GRASS_SEGMENTS, GRASS_PATCH_SIZE, GRASS_WIDTH, GRASS_HEIGHT) },
+     time: { value: 0 }
 };
 const grassMaterial = new THREE.ShaderMaterial({
      uniforms: grassUniforms,
@@ -134,73 +125,42 @@ const grassGeometry = createGeometry(GRASS_SEGMENTS);
 const grass = new THREE.Mesh(grassGeometry, grassMaterial);
 scene.add(grass);
 
-//Make statue AND bake in transformations for future bug-prevention
-const statueUniforms = {
-     time: { value: 0 },
-     minY: { value: 0.0 },
-     maxY: { value: 0.0 },
-};
-const statueMaterial = new THREE.ShaderMaterial({
-     uniforms: statueUniforms,
-     vertexShader: vshStatueText,
-     fragmentShader: fshStatueText,
-     side: THREE.DoubleSide,
+//Make statue
+const gltfLoader = new GLTFLoader();
+const matcapTexture = new THREE.TextureLoader().load('/matcap.png');
+const matcapMaterial = new THREE.MeshMatcapMaterial({
+     matcap: matcapTexture
 });
-const loader = new GLTFLoader();
-const gltf = await loader.loadAsync("/bust_statue.glb");
-const statue = gltf.scene;
-scene.add(statue);
+let statueParts = [];
 
-// Bake transformations
-statue.matrixAutoUpdate = false;
-statue.scale.set(5, 5, 5);
-// statue.rotation.set(0.2, Math.PI + 0.6, 0.2);
-// statue.position.y = -365;
-statue.updateMatrix();
+async function loadStatue(scene) {
+     try {
+          const gltf = await gltfLoader.loadAsync('/bust_separated.glb');
+          const statue = gltf.scene;
 
-let top = 0.0;
-let bottom = 0.0;
+          statue.traverse((child) => {
+               if (child.isMesh)
+                    {
+                    child.material = matcapMaterial;
+                    child.position.set(0, -30, 0);
+                    child.rotation.y = 4;
+                    child.scale.set(3, 3, 3);                    
+                    }
 
-statue.traverse((child) => {
-     if (child.isMesh) {
-          // Apply matrix to geometry
-          child.geometry.applyMatrix4(child.matrix);
-          child.geometry.computeVertexNormals(); // fix normals after baking
-          child.geometry.computeBoundingBox();
-          console.log(child.geometry);
-          const bbox = child.geometry.boundingBox;
-          statueUniforms.minY.value = bbox.min.y;
-          statueUniforms.maxY.value = bbox.max.y;
+          });
+          statueParts = statue.children;
+          scene.add(statue);
+          return statue;
 
-          const secondBB = new THREE.Box3().setFromObject(child);
-          top = secondBB.max.y;
-          bottom = secondBB.min.y;
-          console.log(top, bottom);
-          statueUniforms.maxY.value = top;
-          statueUniforms.minY.value = bottom;
-
-          // Reset transforms
-          child.scale.set(1, 1, 1);
-          //     child.rotation.set(0, 0, 0);
-          //     child.position.set(0, 0, 0);
-          child.updateMatrix();
-
-          child.material = statueMaterial;
+     } catch (error) {
+          console.error('Error loading GLTF:', error);
      }
-});
+}
+loadStatue(scene);
 
-const boxGeometry = new THREE.BoxGeometry(5, (top - bottom) * 5.0, 5);
-const boxMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-const box = new THREE.Mesh(boxGeometry, boxMaterial);
-scene.add(box);
-box.position.set(30, 365, 25);
 
-const camera = new THREE.PerspectiveCamera(
-     80,
-     screenSizes.width / screenSizes.height,
-     0.1,
-     750,
-);
+
+const camera = new THREE.PerspectiveCamera(80, screenSizes.width / screenSizes.height, 0.1, 750);
 camera.position.set(70, 10, -310);
 camera.lookAt(0, 0, 0);
 scene.add(camera);
@@ -332,27 +292,46 @@ document.addEventListener("click", function (e) {
      if (action === "expand") {
           handleExpand();
      }
+
+     const expandPath = icon.querySelector("#expand-path");
+     const collapsePath = icon.querySelector("#collapse-path");
+
+     if (!expandPath || !collapsePath) return;
+
+     const isFullscreen = icon.dataset.fullscreen === "true";
+
+     if (!isFullscreen) {
+          expandPath.style.visibility = "hidden";
+          collapsePath.style.visibility = "visible";
+          icon.dataset.fullscreen = "true";
+     } else {
+          expandPath.style.visibility = "visible";
+          collapsePath.style.visibility = "hidden";
+          icon.dataset.fullscreen = "false";
+          console.log("Reducing!")
+     }
 });
 
-const icon = document.getElementById("fullscreen");
-const expandPath = document.getElementById("expand-path");
-const collapsePath = document.getElementById("collapse-path");
-let fullscreen = false;
-if (icon)
-{
-     icon.addEventListener("click", () => {
-          if (!fullscreen) {
-               expandPath.style.display = "none";
-               collapsePath.style.display = "block";
-               fullscreen = true;
-          } else {
-               expandPath.style.display = "block";
-               collapsePath.style.display = "none";
-               fullscreen = false;
-          }
-          console.log("fullscreen", fullscreen);
-     });
-}
+// const icon = document.getElementById("fullscreen");
+// const expandPath = document.getElementById("expand-path");
+// const collapsePath = document.getElementById("collapse-path");
+// let fullscreen = false;
+// if (icon) {
+//      icon.addEventListener("click", () => {
+//           if (!fullscreen) {
+//                expandPath.style.visibility = "hidden";
+//                collapsePath.style.visibility = "visible";
+//                fullscreen = true;
+//                console.log(expandPath, collapsePath);
+//           } else {
+//                expandPath.style.visibility = "visible";
+//                collapsePath.style.visibility = "hidden";
+//                fullscreen = false;
+//                console.log(icon, expandPath, collapsePath);
+//           }
+//           console.log("fullscreen", fullscreen);
+//      });
+// }
 
 
 //TODO: Use URL query parameters to track expanded state
@@ -374,7 +353,8 @@ const tick = () => {
      //controls.update;
      timer.update();
      const elapsedTime = timer.getElapsed();
-     grassUniforms.time.value = statueUniforms.time.value = elapsedTime;
+
+     grassUniforms.time.value = elapsedTime;
      camera.fov = lerp(80, 100, scrollValue);
      camera.position.z = lerp(-310, -30, scrollValue);
      camera.position.y = lerp(-5, 5, scrollValue);
@@ -383,6 +363,12 @@ const tick = () => {
      camera.rotation.y = lerp(0, Math.PI * -0.2, scrollValue);
      //camera.rotation.x = lerp(Math.PI, Math.PI * 0.8, scrollValue);
      camera.updateProjectionMatrix();
+     const statueTimer = elapsedTime * 0.25;
+
+     //Statue animations
+     for (let i = 0; i < statueParts.length; i++) {
+          statueParts[i].position.y = -33 + (i * (Math.sin(statueTimer) + 0.95) * 1.5);
+     }
 
      // UI trigger logic
      if (scrollValue > threshold && !uiShown) {
