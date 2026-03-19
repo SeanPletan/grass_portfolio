@@ -1,79 +1,127 @@
-import md_raw from "./test.md?raw"
-
-export default function projectParser() {
-     const json = [];
+export function projectParser(md_raw) {
+     const json = {};
      const lines = md_raw.split("\n");
-     let data = "";
 
-
+     // --- Parse title, links, technologies, tags --- //
      for (let line of lines) {
           line = line.trim();
 
-          if (line.startsWith('#')) {
-               const title = line.match(/^#\s+(.*)/);
-               let links = null;
-               let technologies = null;
-               let tags = null;
-
-
-               if (title) {
-                    data = title[1];
-                    json.push({ type: 'title', data });
-                    continue;
-               }
-               if (/^#{2}\s/.test(line)) {
-                    links = line.match(/https?:\/\/[^\s]+/g);
-                    data = links;
-                    json.push({ type: 'links', data});
-                    continue;
-               }
-               if (/^#{3}\s/.test(line)) {
-                    technologies = line.match(/'([^']+)'/g);
-                    technologies = technologies.map(tag => tag.replace(/^'|'$/g, ''));
-                    data = technologies;
-                    json.push({ type: 'technologies', data });
-                    continue;
-               }
-               if (/^#{4}\s/.test(line)) {
-                    tags = line.match(/'([^']+)'/g);
-                    tags = tags.map(tag => tag.replace(/^'|'$/g, ''));
-                    data = tags;
-                    json.push({ type: 'tags', data });
-                    continue;
-               }
+          // Title
+          if (/^#\s+/.test(line)) {
+               const match = line.match(/^#\s+(.*)/);
+               if (match) 
+                    json.title = match[1];
+               continue;
           }
 
-          else if (line.includes('<!--BLOG SECTION BELOW-->'))
+          // Links
+          if (/^##\s+/.test(line)) {
+               const matches = line.match(/https?:\/\/[^\s]+/g);
+               if (matches) 
+                    json.links = matches;
+               continue;
+          }
+
+          // Technologies
+          if (/^###\s+/.test(line)) {
+               const matches = line.match(/'([^']+)'/g);
+               if (matches) 
+                    json.technologies = matches.map(tag => tag.replace(/^'|'$/g, ''));
+               continue;
+          }
+
+          // Tags
+          if (/^####\s+/.test(line)) {
+               const matches = line.match(/'([^']+)'/g);
+               if (matches) 
+                    json.tags = matches.map(tag => tag.replace(/^'|'$/g, ''));
+               continue;
+          }
+
+          // Stop parsing when blog section starts
+          if (line.includes('<!--BLOG SECTION BELOW-->')) 
                break;
      }
 
-     const summaryLine = md_raw
-          .split('\n')
-          .map(line => line.trim())
-          .find(line => line.toLowerCase().startsWith('summary:'));
-
+     // --- Parse summary --- //
+     const summaryLine = lines.find(line => line.toLowerCase().startsWith('summary:'));
      if (summaryLine) {
-          data = summaryLine.replace(/^summary:\s*/i, '');
-          json.push({ type: 'summary', data });
+          json.summary = summaryLine.replace(/^summary:\s*/i, '');
      }
 
-
-
-
+     // --- Parse blog (everything after blog marker) --- //
      const blogPart = md_raw.split('<!--BLOG SECTION BELOW-->')[1];
-
-     let blogLines = [];
-
      if (blogPart) {
-          blogLines = blogPart
-               .split('\n')
-               .map(line => line.trim())
-               .filter(line => line); // remove empty lines
+          json.blog = blogPart
+               .split('\n\n')
+               .map(p => p.trim())
+               .filter(p => p);
      }
 
-     json.push({ type: 'blog', data: blogLines });
-
-
-     //console.log(JSON.stringify(json, null, 2));
      return json;
+}
+
+
+export function renderProjectCard(json) {
+     const container = document.getElementById('projects-container');
+     console.log("ISNT RENDERED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+     if (!container) return;
+
+     const card = document.createElement('div');
+     card.className = 'projectCard';
+
+     const titleElem = document.createElement('h2');
+     titleElem.textContent = json.title;
+     card.appendChild(titleElem);
+
+
+     //TODO: Re-Do this to dynamically assign a.textContent based on top-level domain name or, if it links to blog, just "Blog"
+     if (json.links?.length) { 
+          const linksContainer = document.createElement('div');
+          linksContainer.className = 'links';
+          json.links.forEach((url, i) => {
+               const a = document.createElement('a');
+               a.href = url;
+               // Simple naming: first link → GitHub, second → Blog, else 'Link #'
+               if (i === 0) a.textContent = 'GitHub';
+               else if (i === 1) a.textContent = 'Blog';
+               else a.textContent = `Link ${i + 1}`;
+               a.target = '_blank';
+               a.rel = 'noopener noreferrer';
+               linksContainer.appendChild(a);
+          });
+          card.appendChild(linksContainer);
+     }
+
+     if (json.technologies?.length) {
+          const techContainer = document.createElement('div');
+          techContainer.className = 'technologies-container';
+          json.technologies.forEach(tech => {
+               const div = document.createElement('div');
+               div.className = 'technologies';
+               div.textContent = tech;
+               techContainer.appendChild(div);
+          });
+          card.appendChild(techContainer);
+     }
+
+     if (json.tags?.length) {
+          const tagsContainer = document.createElement('div');
+          tagsContainer.className = 'tags-container';
+          json.tags.forEach(tag => {
+               const div = document.createElement('div');
+               div.className = 'tags';
+               div.textContent = tag;
+               tagsContainer.appendChild(div);
+          });
+          card.appendChild(tagsContainer);
+     }
+
+     if (json.summary) {
+          const p = document.createElement('p');
+          p.textContent = json.summary;
+          card.appendChild(p);
+     }
+
+     container.appendChild(card);
 }

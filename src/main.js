@@ -12,7 +12,8 @@ import fshGrassText from "./shaders/grass_fragment_shader.glsl?raw";
 import vshGrassText from "./shaders/grass_vertex_shader.glsl?raw";
 import fshGroundText from "./shaders/ground_fragment_shader.glsl?raw";
 import vshGroundText from "./shaders/ground_vertex_shader.glsl?raw";
-import projectParser from "./projects/project_parsing";
+import * as projectParsing from "./projects/project_parsing";
+import projectTest from "./projects/test.md?raw"
 import getAboutMePage from "./routes/about.md?raw";
 import getProjectsPage from "./routes/projects";
 import getContactPage from "./routes/contact.md?raw";
@@ -328,8 +329,9 @@ function handleExpand() {
      }
 }
 
-let json = projectParser();
+let json = projectParsing.projectParser(projectTest); //TODO: still have to do the images.
 console.log(JSON.stringify(json, null, 2));
+projectParsing.renderProjectCard(json); //looks like i have to call this every time the view is rendered?
 
 const tick = () => {
      //stats.begin();
