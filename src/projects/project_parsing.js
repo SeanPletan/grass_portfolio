@@ -58,6 +58,22 @@ export default function projectParser() {
      }
 
 
+
+
+     const blogPart = md_raw.split('<!--BLOG SECTION BELOW-->')[1];
+
+     let blogLines = [];
+
+     if (blogPart) {
+          blogLines = blogPart
+               .split('\n')
+               .map(line => line.trim())
+               .filter(line => line); // remove empty lines
+     }
+
+     json.push({ type: 'blog', data: blogLines });
+
+
      //console.log(JSON.stringify(json, null, 2));
      return json;
 }
