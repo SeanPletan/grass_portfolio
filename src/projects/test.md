@@ -1,14 +1,14 @@
-# Test Project (h1)
+# Test Project
 
-## Links: https://github.com/nodeca/pica https://seanpletan.net (h2)
+## Links: https://github.com/nodeca/pica https://seanpletan.net
 
 ![test](/Portfolio_Mockup.png)
 
 ### 'Markdown-it' 'Three.js' 'Javascript' 'HTML' 'CSS' 'VS Code'
 
-#### #Embedded Systems #Automotive #Low Level Communications #Tag Example #4
+#### 'Embedded Systems' 'Automotive' 'Low Level Communications' 'Tag Example #4'
 
-This is a simple little introduction to the simple little test project. Below this will be some sort of separator which the program will search for, and only render the text above it in the projects section. Below it will be rendered in the blog section.
+summary:This is a simple little introduction to the simple little test project. Below this will be some sort of separator which the program will search for, and only render the text above it in the projects section. Below it will be rendered in the blog section.
 
 <!--BLOG SECTION BELOW-->
 

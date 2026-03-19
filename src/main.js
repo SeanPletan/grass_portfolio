@@ -12,6 +12,7 @@ import fshGrassText from "./shaders/grass_fragment_shader.glsl?raw";
 import vshGrassText from "./shaders/grass_vertex_shader.glsl?raw";
 import fshGroundText from "./shaders/ground_fragment_shader.glsl?raw";
 import vshGroundText from "./shaders/ground_vertex_shader.glsl?raw";
+import projectParser from "./projects/project_parsing";
 import getAboutMePage from "./routes/about.md?raw";
 import getProjectsPage from "./routes/projects";
 import getContactPage from "./routes/contact.md?raw";
@@ -326,6 +327,9 @@ function handleExpand() {
           expanded = false;
      }
 }
+
+let json = projectParser();
+console.log(JSON.stringify(json, null, 2));
 
 const tick = () => {
      //stats.begin();
