@@ -110,7 +110,6 @@ scene.add(ground);
 const hdrLoader = new HDRLoader();
 const envMap = await hdrLoader.loadAsync("/puresky.hdr");
 envMap.mapping = THREE.EquirectangularReflectionMapping;
-scene.environment = envMap;
 scene.background = envMap;
 scene.backgroundRotation.y += Math.PI * 1.125;
 
