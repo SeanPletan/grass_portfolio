@@ -37,7 +37,9 @@ const light = new THREE.AmbientLight(0x404040, 300); // soft white light
 scene.add(light);
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
-
+let json = projectParsing.projectParser(projectTest);
+let scrollValue = 0;
+const threshold = 0.5;
 const clickable = [];
 
 const GRASS_SEGMENTS = 5;
@@ -172,6 +174,13 @@ canvas.addEventListener("click", () => {
      handleRouteChange();
 });
 
+function ensureScrolled() {
+if (scrollValue < threshold)
+     scrollValue = 1.0;
+
+return scrollValue
+}
+
 function handleRouteChange() {
      const md = markdownit({
           html: true,
@@ -194,24 +203,31 @@ function handleRouteChange() {
                document.getElementById("overlay-content").innerHTML = view;
                document.getElementById("overlay").classList.remove("overlay--hidden");
                document.getElementById("overlay").classList.add("overlay--panel");
+               ensureScrolled();
                break;
           case "/projects":
                view = md.render(getProjectsPage)
                document.getElementById("overlay-content").innerHTML = view;
                document.getElementById("overlay").classList.remove("overlay--hidden");
                document.getElementById("overlay").classList.add("overlay--panel");
+               projectParsing.renderProjectCard(json);
+               projectParsing.renderProjectCard(json);
+               projectParsing.renderProjectCard(json);
+               ensureScrolled();
                break;
           case "/contact":
                view = md.render(getContactPage);
                document.getElementById("overlay-content").innerHTML = view;
                document.getElementById("overlay").classList.remove("overlay--hidden");
                document.getElementById("overlay").classList.add("overlay--panel");
+               ensureScrolled();
                break;
           default:
                view = md.render(get404Page);
                document.getElementById("overlay-content").innerHTML = view;
                document.getElementById("overlay").classList.remove("overlay--hidden");
                document.getElementById("overlay").classList.add("overlay--panel");
+               ensureScrolled();
      }
 }
 
@@ -231,13 +247,14 @@ function lerp(a, b, t) {
      return a + (b - a) * t;
 }
 
-let scrollValue = 0;
+
 
 const scrollTarget = document.getElementById("webgl");
 window.addEventListener("wheel", (event) => {
      if (event.target == scrollTarget) {
           scrollValue += event.deltaY * 0.0008;
           scrollValue = Math.min(Math.max(scrollValue, 0), 1);
+         // console.log(scrollValue)
      }
 });
 
@@ -279,7 +296,7 @@ const name = document.getElementById("name");
 const overlay = document.getElementById("overlay");
 
 let uiShown = false;
-const threshold = 0.5;
+
 
 document.addEventListener("click", function (e) {
      const icon = e.target.closest("[data-action]");
@@ -317,12 +334,6 @@ function handleExpand() {
           expanded = false;
      }
 }
-
-let json = projectParsing.projectParser(projectTest);
-//console.log(JSON.stringify(json, null, 2));
-projectParsing.renderProjectCard(json); //looks like i have to call this every time the view is rendered?
-projectParsing.renderProjectCard(json);
-projectParsing.renderProjectCard(json);
 
 const tick = () => {
      //stats.begin();
