@@ -4,7 +4,7 @@
 
 ![test](/Portfolio_Mockup.png)
 
-## Links: https://github.com/nodeca/pica https://seanpletan.net /about
+## Links: https://github.com/nodeca/pica https://seanpletan.net /about (this is ignored lol)
 
 #### 'Embedded Systems' 'Automotive' 'Low Level Communications' 'Tag Example #4'
 

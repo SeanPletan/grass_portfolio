@@ -130,8 +130,9 @@ const grass = new THREE.Mesh(grassGeometry, grassMaterial);
 scene.add(grass);
 
 //Make statue
+const randInt = Math.floor(Math.random() * 6.0) + 1.0; //random matcap material on DOM load, change 6.0 to be one less than the number of matcap files you have
 const gltfLoader = new GLTFLoader();
-const matcapTexture = new THREE.TextureLoader().load('/matcap.png');
+const matcapTexture = new THREE.TextureLoader().load(`/matcap${randInt}.png`);
 const matcapMaterial = new THREE.MeshMatcapMaterial({
      matcap: matcapTexture
 });
@@ -354,7 +355,7 @@ const tick = () => {
 
      //Statue animations
      for (let i = 0; i < statueParts.length; i++) {
-          statueParts[i].position.y = -33 + (i * (Math.sin(statueTimer) + 0.95) * 1.5);
+          statueParts[i].position.y = -33 + (i * (Math.cos(statueTimer) + 0.95) * 1.5);
      }
 
      // UI trigger logic
