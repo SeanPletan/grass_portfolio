@@ -89,15 +89,9 @@ a {
      display: flex;
      justify-content: space-between;
      align-items: center;
-     margin: 20px;  
-}
-
-#projects-container {
-     display: flex;
-     justify-content: space-between;
-     align-items: center;
      margin: 20px;
 }
+
 #not-found-heading {
      display: flex;
      justify-content: space-between;
@@ -105,12 +99,8 @@ a {
      margin: 20px;
 }
 
-#overlay-content > h1 {
+#overlay-content>h1 {
      margin: 20px 0px 20px 20px;
-}
-
-#overlay-content p {
-     margin: 0px 20px 20px 20px;
 }
 
 #overlay {
@@ -149,7 +139,7 @@ a {
 .overlay--expanded {
      width: 100vw;
      border-radius: 0;
-     --content-padding: 0 10vw 0 10vw;
+     --content-padding: 0 5vw 0 5vw;
 }
 
 #overlay.overlay--expanded::before,
@@ -163,16 +153,22 @@ a {
 }
 
 .icon {
+     display: flex;
+     width: 30px;
+     height: 30px;
      background-color: rgba(255, 255, 255, 0.25);
-     border-radius: 3px;
+     border-radius: 5px;
      box-shadow: rgba(0, 0, 0, 0.8) 0px 5px 50px 0px;
      cursor: pointer;
+     align-items: center;
+     justify-content: center;
+     margin-right: 5px;
 }
 
 
 
 #scene-control {
-     display:none;
+     display: none;
 }
 
 
@@ -209,4 +205,138 @@ a {
      border-radius: 20px;
      backdrop-filter: blur(5px);
      isolation: isolate;
+}
+
+/* ----------  Project Card Below ------------- */
+
+#projects-container {
+     display: flex;
+     flex-flow: row wrap;
+     gap: 50px;
+     justify-content: space-between;
+     align-items: center;
+     margin: 20px;
+}
+
+.project-card {
+     max-width: 100%;
+     min-width: 450px;
+     width: 100%;
+}
+
+.card-title {
+     display: flex;
+     flex-flow: row nowrap;
+}
+
+.card-title > h2 {
+     font-size: 24px;
+}
+
+.project-card>img {
+     width: calc(100% - 10px);
+     padding: 0;
+     margin: 0 5px 0 5px;
+}
+
+.project-card>* {
+     margin: 5px;
+}
+
+.links-container {
+     margin-left: auto;
+     display: flex;
+     flex-flow: row wrap;
+     gap: 5px;
+}
+
+.links-container>a {
+     background: rgba(137, 169, 255, 0.7);
+}
+
+.technologies-container {
+     display: flex;
+     flex-flow: row wrap;
+     border-radius: 5px;
+}
+
+.technologies {
+     font-size: 12px;
+     padding: 3px;
+     box-shadow: 0px 6px 24px rgba(0, 0, 0, 0.2);
+     background: rgba(255, 255, 255, 0.3);
+     color: black;
+     border: 1px solid rgba(0, 0, 0, 0.5);
+}
+
+.tags-container {
+     display: flex;
+     flex-flow: row wrap;
+}
+
+.tags-container > * {
+     background: rgba(137, 169, 255, 0.3);
+}
+
+.tags {
+     font-size: 12px;
+     padding: 3px;
+     box-shadow: 0px 6px 24px rgba(0, 0, 0, 0.2);
+     background: rgba(255, 255, 255, 0.3);
+     color: black;
+     border: 1px solid rgba(0, 0, 0, 0.5);
+}
+
+.project-card-button {
+     font-size: 12px;
+     border-radius: 5px;
+     padding: 3px;
+     box-shadow: 0px 6px 24px rgba(0, 0, 0, 0.2);
+     background: rgba(255, 255, 255, 0.3);
+     color: black;
+}
+
+
+
+
+
+
+/* ------------ Link Icons Below --------------- */
+
+.link-icon-container {
+     display: flex;
+     flex: row nowrap;
+     justify-content: right;
+}
+
+.link-icon {
+     display: flex;
+     justify-content: flex-end;
+     padding: 0 5px 0 5px;
+}
+
+.reveal-btn {
+     display: inline-flex;
+     align-items: center;
+     justify-content: flex-end;
+
+     width: 20px;
+     padding: 5px;
+     gap: 5px;
+
+     overflow: hidden;
+     white-space: nowrap;
+
+     background-color: rgba(255, 255, 255, 0.25);
+     border-radius: 5px;
+     box-shadow: rgba(0, 0, 0, 0.8) 0px 5px 50px 0px;
+     color: rgb(0, 0, 0);
+
+     cursor: pointer;
+
+     transition: width 180ms ease;
+}
+
+.link-icon:hover .reveal-btn {
+     width: 90px;
 }

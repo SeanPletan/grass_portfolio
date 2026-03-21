@@ -15,7 +15,7 @@ import vshGroundText from "./shaders/ground_vertex_shader.glsl?raw";
 import * as projectParsing from "./projects/project_parsing";
 import projectTest from "./projects/test.md?raw"
 import getAboutMePage from "./routes/about.md?raw";
-import getProjectsPage from "./routes/projects";
+import getProjectsPage from "./routes/projects.md?raw";
 import getContactPage from "./routes/contact.md?raw";
 import get404Page from "./routes/404.md?raw";
 
@@ -44,7 +44,7 @@ const GRASS_SEGMENTS = 5;
 const GRASS_PATCH_SIZE = 300;
 const GRASS_WIDTH = 0.75;
 const GRASS_HEIGHT = 4.5;
-const NUM_GRASS = GRASS_PATCH_SIZE * GRASS_PATCH_SIZE * 3;
+const NUM_GRASS = GRASS_PATCH_SIZE * GRASS_PATCH_SIZE * 1.5;
 
 function createGeometry(segments) {
      const VERTICES = (segments + 1) * 2;
@@ -196,13 +196,10 @@ function handleRouteChange() {
                document.getElementById("overlay").classList.add("overlay--panel");
                break;
           case "/projects":
-               view = getProjectsPage();
+               view = md.render(getProjectsPage)
                document.getElementById("overlay-content").innerHTML = view;
                document.getElementById("overlay").classList.remove("overlay--hidden");
                document.getElementById("overlay").classList.add("overlay--panel");
-               const icon = document.getElementById("fullscreen");
-               const expandPath = document.getElementById("expand-path");
-               const collapsePath = document.getElementById("collapse-path");
                break;
           case "/contact":
                view = md.render(getContactPage);
@@ -287,30 +284,22 @@ const threshold = 0.5;
 document.addEventListener("click", function (e) {
      const icon = e.target.closest("[data-action]");
 
+
      if (!icon) return;
-
+     const img = icon.querySelector("img");
+     const isFullscreen = icon.dataset.fullscreen === "true";
      const action = icon.dataset.action;
-
      if (action === "expand") {
           handleExpand();
      }
 
-     const expandPath = icon.querySelector("#expand-path");
-     const collapsePath = icon.querySelector("#collapse-path");
-
-     if (!expandPath || !collapsePath) return;
-
-     const isFullscreen = icon.dataset.fullscreen === "true";
-
      if (!isFullscreen) {
-          expandPath.style.visibility = "hidden";
-          collapsePath.style.visibility = "visible";
+          img.src="/minimize.svg"
           icon.dataset.fullscreen = "true";
-     } else {
-          expandPath.style.visibility = "visible";
-          collapsePath.style.visibility = "hidden";
+     } 
+     else {
+          img.src="/maximize.svg"
           icon.dataset.fullscreen = "false";
-          console.log("Reducing!")
      }
 });
 
@@ -329,9 +318,11 @@ function handleExpand() {
      }
 }
 
-let json = projectParsing.projectParser(projectTest); //TODO: still have to do the images.
-console.log(JSON.stringify(json, null, 2));
+let json = projectParsing.projectParser(projectTest);
+//console.log(JSON.stringify(json, null, 2));
 projectParsing.renderProjectCard(json); //looks like i have to call this every time the view is rendered?
+projectParsing.renderProjectCard(json);
+projectParsing.renderProjectCard(json);
 
 const tick = () => {
      //stats.begin();

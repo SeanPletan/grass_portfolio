@@ -1,10 +1,10 @@
 # Test Project
 
-## Links: https://github.com/nodeca/pica https://seanpletan.net
+### 'Markdown-it' 'Three.js' 'Javascript' 'HTML' 'CSS' 'VS Code'
 
 ![test](/Portfolio_Mockup.png)
 
-### 'Markdown-it' 'Three.js' 'Javascript' 'HTML' 'CSS' 'VS Code'
+## Links: https://github.com/nodeca/pica https://seanpletan.net /about
 
 #### 'Embedded Systems' 'Automotive' 'Low Level Communications' 'Tag Example #4'
 
