@@ -46,7 +46,7 @@ const GRASS_SEGMENTS = 5;
 const GRASS_PATCH_SIZE = 300;
 const GRASS_WIDTH = 0.75;
 const GRASS_HEIGHT = 4.5;
-const NUM_GRASS = GRASS_PATCH_SIZE * GRASS_PATCH_SIZE * 1.5;
+const NUM_GRASS = GRASS_PATCH_SIZE * GRASS_PATCH_SIZE * 2.0;
 
 function createGeometry(segments) {
      const VERTICES = (segments + 1) * 2;
@@ -199,7 +199,6 @@ function handleRouteChange() {
                break;
           case "/about":
                view = md.render(getAboutMePage);
-               //view = getAboutMePage();
                document.getElementById("overlay-content").innerHTML = view;
                document.getElementById("overlay").classList.remove("overlay--hidden");
                document.getElementById("overlay").classList.add("overlay--panel");
