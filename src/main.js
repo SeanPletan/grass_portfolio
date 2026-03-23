@@ -456,8 +456,8 @@ tick();
 
 
 //figure out expanded vs not expanded                                                         DONE
-//figure out regex to get internal routes (for the blog)
-//figure out how to route to the blog from project card without DOM reload
-//start doing the blog? 
+//figure out regex to get internal routes (for the blog)                                      DONE
+//figure out how to route to the blog from project card without DOM reload                    DONE
+//start doing the blog?                                                                    STARTED
 //do a non-half-assed version of contact
 //
