@@ -13,11 +13,12 @@ import vshGrassText from "./shaders/grass_vertex_shader.glsl?raw";
 import fshGroundText from "./shaders/ground_fragment_shader.glsl?raw";
 import vshGroundText from "./shaders/ground_vertex_shader.glsl?raw";
 import * as projectParsing from "./projects/project_parsing";
-import projectTest from "./projects/test.md?raw"
+import * as blogParsing from "./blogs/blog_parsing";
 import getAboutMePage from "./routes/about.md?raw";
 import getProjectsPage from "./routes/projects.md?raw";
 import getContactPage from "./routes/contact.md?raw";
 import get404Page from "./routes/404.md?raw";
+import getBlogPage from "./routes/blog.md?raw";
 
 //var stats = new Stats();
 //stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
@@ -37,16 +38,44 @@ const light = new THREE.AmbientLight(0x404040, 300); // soft white light
 scene.add(light);
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
-let json = projectParsing.projectParser(projectTest);
+let json = [];
 let scrollValue = 0;
 const threshold = 0.5;
 const clickable = [];
+const markdownFiles = import.meta.glob('./projects/*.md', { query: 'raw' });
 
+async function loadAllMarkdown() {
+     const result = {};
+     for (const path in markdownFiles) {
+          result[path] = await markdownFiles[path]();
+     }
+     return result;
+}
+
+loadAllMarkdown().then(all_md => {
+     for (const path in all_md) {
+          json.push(projectParsing.projectParser(all_md[path].default));
+     }
+     // console.log(json);
+     // for (let i = 0; i < json.length; i++) {
+     //      console.log("rendered blog (returned 0)", i)
+     //      blogParsing.renderBlogCard(0)
+     // }
+     // for (const path in all_md) {
+     //      blogParsing.renderBlogCard(all_md[path].default);
+     // }
+});
+
+
+
+
+
+//console.log(json);
 const GRASS_SEGMENTS = 5;
 const GRASS_PATCH_SIZE = 300;
 const GRASS_WIDTH = 0.75;
 const GRASS_HEIGHT = 4.5;
-const NUM_GRASS = GRASS_PATCH_SIZE * GRASS_PATCH_SIZE * 2.0;
+const NUM_GRASS = GRASS_PATCH_SIZE * GRASS_PATCH_SIZE * 3.0;
 
 function createGeometry(segments) {
      const VERTICES = (segments + 1) * 2;
@@ -88,7 +117,7 @@ const terrainDiffuse = new THREE.TextureLoader().load("/terrainTexture/Terrain_T
 terrainDiffuse.wrapS = THREE.RepeatWrapping;
 terrainDiffuse.wrapT = THREE.RepeatWrapping;
 const groundMaterial = new THREE.ShaderMaterial({
-     uniforms: 
+     uniforms:
      {
           uTerrainTexture: { value: terrainDiffuse },
           uTileScale: { value: 30.0 },
@@ -143,13 +172,12 @@ async function loadStatue(scene) {
           const statue = gltf.scene;
 
           statue.traverse((child) => {
-               if (child.isMesh)
-                    {
+               if (child.isMesh) {
                     child.material = matcapMaterial;
                     child.position.set(0, -30, 0);
                     child.rotation.y = 4;
-                    child.scale.set(3, 3, 3);                    
-                    }
+                    child.scale.set(3, 3, 3);
+               }
 
           });
           statueParts = statue.children;
@@ -175,10 +203,10 @@ canvas.addEventListener("click", () => {
 });
 
 function ensureScrolled() {
-if (scrollValue < threshold)
-     scrollValue = 1.0;
+     if (scrollValue < threshold)
+          scrollValue = 1.0;
 
-return scrollValue
+     return scrollValue
 }
 
 function handleRouteChange() {
@@ -189,44 +217,65 @@ function handleRouteChange() {
           breaks: true,
      });
      const path = window.location.pathname;
+     //console.log(path);
      let view;
 
-     switch (path) {
-          case "/":
-               document.getElementById("overlay").classList.remove("overlay--panel");
-               document.getElementById("overlay").classList.remove("overlay--expanded");
-               document.getElementById("overlay").classList.add("overlay--hidden");
-               break;
-          case "/about":
-               view = md.render(getAboutMePage);
-               document.getElementById("overlay-content").innerHTML = view;
-               document.getElementById("overlay").classList.remove("overlay--hidden");
-               document.getElementById("overlay").classList.add("overlay--panel");
-               ensureScrolled();
-               break;
-          case "/projects":
-               view = md.render(getProjectsPage)
-               document.getElementById("overlay-content").innerHTML = view;
-               document.getElementById("overlay").classList.remove("overlay--hidden");
-               document.getElementById("overlay").classList.add("overlay--panel");
-               projectParsing.renderProjectCard(json);
-               projectParsing.renderProjectCard(json);
-               projectParsing.renderProjectCard(json);
-               ensureScrolled();
-               break;
-          case "/contact":
-               view = md.render(getContactPage);
-               document.getElementById("overlay-content").innerHTML = view;
-               document.getElementById("overlay").classList.remove("overlay--hidden");
-               document.getElementById("overlay").classList.add("overlay--panel");
-               ensureScrolled();
-               break;
-          default:
-               view = md.render(get404Page);
-               document.getElementById("overlay-content").innerHTML = view;
-               document.getElementById("overlay").classList.remove("overlay--hidden");
-               document.getElementById("overlay").classList.add("overlay--panel");
-               ensureScrolled();
+     if (path === "/") {
+          document.getElementById("overlay").classList.remove("overlay--panel");
+          document.getElementById("overlay").classList.remove("overlay--expanded");
+          document.getElementById("overlay").classList.add("overlay--hidden");
+     } else if (path === "/about") {
+          view = md.render(getAboutMePage);
+          document.getElementById("overlay-content").innerHTML = view;
+          document.getElementById("overlay").classList.remove("overlay--hidden");
+          document.getElementById("overlay").classList.add("overlay--panel");
+          ensureScrolled();
+     } else if (path === "/projects") {
+          view = md.render(getProjectsPage);
+          document.getElementById("overlay-content").innerHTML = view;
+          document.getElementById("overlay").classList.remove("overlay--hidden");
+          document.getElementById("overlay").classList.add("overlay--panel");
+          for (const projects in json)
+               projectParsing.renderProjectCard(json[projects]);
+          ensureScrolled();
+          document.querySelectorAll(".route").forEach((link) => {
+               link.addEventListener("click", function (e) {
+                    e.preventDefault();
+                    history.pushState(null, "", this.href);
+                    handleRouteChange();
+               });
+          });
+     } else if (path === "/blog") {
+          // Handle exact /blog route
+          //console.log("Exact /blog found!");
+          view = md.render(getBlogPage); // Handle /blog exactly
+          document.getElementById("overlay-content").innerHTML = view;
+          document.getElementById("overlay").classList.remove("overlay--hidden");
+          document.getElementById("overlay").classList.add("overlay--panel");
+          ensureScrolled();
+     } else if (path.startsWith("/blog")) {
+          const blogObject = blogParsing.findBlogContent(path, json);
+          const blogBody = md.render(blogObject.blog);
+          view = blogParsing.renderBlogCard(blogObject); // Handle /blog/[subpath]
+          document.getElementById("overlay-content").innerHTML = "";
+          document.getElementById("overlay-content").appendChild(view);
+          document.getElementById("blog-body").innerHTML = blogBody;
+          document.getElementById("overlay").classList.remove("overlay--hidden");
+          document.getElementById("overlay").classList.add("overlay--panel");
+          ensureScrolled();
+     } else if (path === "/contact") {
+          view = md.render(getContactPage);
+          document.getElementById("overlay-content").innerHTML = view;
+          document.getElementById("overlay").classList.remove("overlay--hidden");
+          document.getElementById("overlay").classList.add("overlay--panel");
+          ensureScrolled();
+     } else {
+          // Default case for 404
+          view = md.render(get404Page);
+          document.getElementById("overlay-content").innerHTML = view;
+          document.getElementById("overlay").classList.remove("overlay--hidden");
+          document.getElementById("overlay").classList.add("overlay--panel");
+          ensureScrolled();
      }
 }
 
@@ -253,7 +302,7 @@ window.addEventListener("wheel", (event) => {
      if (event.target == scrollTarget) {
           scrollValue += event.deltaY * 0.0008;
           scrollValue = Math.min(Math.max(scrollValue, 0), 1);
-         // console.log(scrollValue)
+          // console.log(scrollValue)
      }
 });
 
@@ -293,6 +342,8 @@ timer.connect(document);
 const nav = document.getElementById("nav");
 const name = document.getElementById("name");
 const overlay = document.getElementById("overlay");
+const cards = document.getElementsByClassName("project-card");
+//console.log(cards);
 
 let uiShown = false;
 
@@ -310,11 +361,11 @@ document.addEventListener("click", function (e) {
      }
 
      if (!isFullscreen) {
-          img.src="/minimize.svg"
+          img.src = "/minimize.svg"
           icon.dataset.fullscreen = "true";
-     } 
+     }
      else {
-          img.src="/maximize.svg"
+          img.src = "/maximize.svg"
           icon.dataset.fullscreen = "false";
      }
 });
@@ -326,10 +377,18 @@ function handleExpand() {
      if (expanded == false) {
           overlay.classList.remove("overlay--panel");
           overlay.classList.add("overlay--expanded");
+          for (let i = 0; i < cards.length; i++) {
+               cards[i].classList.remove('project-card--expanded');
+               cards[i].classList.add("project-card--small");
+          }
           expanded = true;
      } else {
           overlay.classList.remove("overlay--expanded");
           overlay.classList.add("overlay--panel");
+          for (let i = 0; i < cards.length; i++) {
+               cards[i].classList.add('project-card--expanded');
+               cards[i].classList.remove("project-card--small");
+          }
           expanded = false;
      }
 }
@@ -387,3 +446,18 @@ tick();
 
 //camera.position.set(380, 15, 260);
 //camera.lookAt(0,-100, 0) //position 1
+
+
+
+
+
+
+
+
+
+//figure out expanded vs not expanded                                                         DONE
+//figure out regex to get internal routes (for the blog)
+//figure out how to route to the blog from project card without DOM reload
+//start doing the blog? 
+//do a non-half-assed version of contact
+//

@@ -23,11 +23,17 @@ export function projectParser(md_raw) {
                continue;
           }
 
-          // Links
+          // Outside Links
           if (/^##\s+/.test(line)) {
                const matches = line.match(/https?:\/\/[^\s]+/g);
                if (matches)
                     json.links = matches;
+          }
+
+          if (/\/blog\S*/.test(line)) {
+               const match = line.match(/\/blog\S*/);
+               if (match)
+                    json.links.push(match[0]);
                continue;
           }
 
@@ -62,12 +68,9 @@ export function projectParser(md_raw) {
      const blogPart = md_raw.split('<!--BLOG SECTION BELOW-->')[1];
      if (blogPart) {
           json.blog = blogPart
-               .split('\n\n')
-               .map(p => p.trim())
-               .filter(p => p);
      }
 
-     // json.links.push("/about");
+     //json.links.push("/blog/hello_blog");
      return json;
 }
 
@@ -105,7 +108,7 @@ function createLinkIcons(urls) {
 
           const link = document.createElement("a");
           link.href = url;
-          link.className = "reveal-btn";
+          link.className = "reveal-btn route";
 
           const labelEl = document.createElement("div");
           labelEl.className = "label";
