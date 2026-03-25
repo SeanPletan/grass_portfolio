@@ -13,15 +13,30 @@ export function renderBlogCard(jsonObject) {
      blog.id = "blog";
 
      const blogHeading = document.createElement('div');
-     blogHeading.className = "blog-heading";
+     blogHeading.id = "blog-heading";
 
      const titleElem = document.createElement('h1');
-     titleElem.innerText = jsonObject.title;
+     titleElem.innerText = jsonObject.title;// + " Blog";
      blogHeading.appendChild(titleElem);
      blog.appendChild(blogHeading);
 
+     const fullscreen = document.createElement("div");
+     fullscreen.className = "icon";
+     fullscreen.id = "fullscreen";
+     fullscreen.dataset.action = "expand";
+
+
+
+
+     const fullscreenImg = document.createElement("img");
+     fullscreenImg.src = "/maximize.svg";
+     fullscreenImg.width = 20;
+     fullscreenImg.height = 20;
+     fullscreen.appendChild(fullscreenImg);
+     blogHeading.appendChild(fullscreen)
+
      const imgElem = document.createElement('img');
-     imgElem.className = "blog-main-image";
+     imgElem.id = "blog-main-image";
      imgElem.src = jsonObject.imageSrc;
      imgElem.alt = jsonObject.imageTitle;
      blog.appendChild(imgElem);

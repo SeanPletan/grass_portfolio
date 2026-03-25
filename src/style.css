@@ -56,14 +56,14 @@ a {
 
      transform: translateX(-100px);
      opacity: 0;
-     transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-          opacity 0.6s ease;
+     transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .nav-button {
      padding: 10px 5px;
      writing-mode: sideways-lr;
      color: white;
+     border-radius: 20px;
 }
 
 #name {
@@ -74,8 +74,7 @@ a {
 
      transform: translateY(-100px);
      opacity: 0;
-     transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-          opacity 0.6s ease;
+     transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 #overlay-content {
@@ -111,16 +110,14 @@ a {
 
 #overlay {
      position: fixed;
-     height: 100vh;
+     height: calc(100vh - 2px); /*border width*/
      right: 0vw;
      color: rgb(0, 0, 0);
      overflow: hidden;
      border-top-right-radius: 0;
      border-bottom-right-radius: 0;
 
-     transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-          transform 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-          opacity 0.6s ease;
+     transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 #overlay::before {
@@ -140,6 +137,7 @@ a {
 
 .overlay--panel {
      width: 40vw;
+          border-radius: 20px;
 }
 
 .overlay--expanded {
@@ -184,7 +182,6 @@ a {
 /*https: //www.apple.com/newsroom/images/2025/06/apple-introduces-a-delightful-and-elegant-new-software-design/article/Apple-WWDC25-Liquid-Glass-Icon-Composer-250609_big.jpg.large.jpg*/
 
 .glass-card {
-     border-radius: 20px;
      isolation: isolate;
      box-shadow: 0px 6px 24px rgba(0, 0, 0, 0.2);
      backdrop-filter: blur(5px);
@@ -228,7 +225,7 @@ a {
      max-width: 100%;
      min-width: 300px;
      width: 100%;
-     transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+     transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .project-card--expanded {
@@ -305,13 +302,14 @@ a {
      border: 1px solid rgba(0, 0, 0, 0.5);
 }
 
-.project-card-button {
-     font-size: 12px;
+.project-card-img {
      border-radius: 5px;
      padding: 3px;
      box-shadow: 0px 6px 24px rgba(0, 0, 0, 0.2);
      background: rgba(255, 255, 255, 0.3);
      color: black;
+     aspect-ratio: 16 / 9;
+     object-fit: cover;
 }
 
 
@@ -361,4 +359,46 @@ a {
 
 .link-icon:hover .reveal-btn {
      width: 90px;
+}
+
+/* --------------- BLOG BELOW ---------------- */
+
+#blog {
+     transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.blog--expanded {
+     width: 50%;
+     margin-left: auto;
+     margin-right: auto;
+}
+
+.blog--panel {
+     width: 100%;
+     margin-left: auto;
+     margin-right: auto;
+}
+
+#blog-heading {
+     display: flex;
+     flex: row nowrap;
+     align-items: center;
+     justify-content: space-between;
+}
+
+#blog-heading {
+     margin: 20px 15px 0px 20px;
+}
+
+#blog-main-image {
+     width: calc(100% - 40px);
+     margin: 20px 20px 0px 20px;
+     aspect-ratio: 16 / 9;
+     object-fit: cover;
+     border-radius: 5px;
+}
+
+#blog-body > * {
+     width: calc(100% - 40px);
+     margin: 20px 20px 0px 20px;
 }

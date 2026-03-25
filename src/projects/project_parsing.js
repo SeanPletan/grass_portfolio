@@ -156,7 +156,7 @@ export function renderProjectCard(json) {
      const ImgElem = document.createElement('img');
      ImgElem.src = json.imageSrc;
      ImgElem.alt = json.imageTitle;
-     ImgElem.className = 'project-card-button';
+     ImgElem.className = 'project-card-img';
      card.appendChild(ImgElem);
 
      if (json.summary) {

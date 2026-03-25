@@ -56,14 +56,6 @@ loadAllMarkdown().then(all_md => {
      for (const path in all_md) {
           json.push(projectParsing.projectParser(all_md[path].default));
      }
-     // console.log(json);
-     // for (let i = 0; i < json.length; i++) {
-     //      console.log("rendered blog (returned 0)", i)
-     //      blogParsing.renderBlogCard(0)
-     // }
-     // for (const path in all_md) {
-     //      blogParsing.renderBlogCard(all_md[path].default);
-     // }
 });
 
 
@@ -158,7 +150,7 @@ const grass = new THREE.Mesh(grassGeometry, grassMaterial);
 scene.add(grass);
 
 //Make statue
-const randInt = Math.floor(Math.random() * 6.0) + 1.0; //random matcap material on DOM load, change 6.0 to be one less than the number of matcap files you have
+const randInt = Math.floor(Math.random() * 6.0) + 1.0; //random matcap material on DOM load, change 6.0 to the number of matcap files you have [1,x]
 const gltfLoader = new GLTFLoader();
 const matcapTexture = new THREE.TextureLoader().load(`/matcap${randInt}.png`);
 const matcapMaterial = new THREE.MeshMatcapMaterial({
@@ -200,6 +192,7 @@ scene.add(camera);
 canvas.addEventListener("click", () => {
      history.pushState(null, "", "/");
      handleRouteChange();
+     tick();
 });
 
 function ensureScrolled() {
@@ -263,6 +256,7 @@ function handleRouteChange() {
           document.getElementById("overlay").classList.remove("overlay--hidden");
           document.getElementById("overlay").classList.add("overlay--panel");
           ensureScrolled();
+          //handleExpand();
      } else if (path === "/contact") {
           view = md.render(getContactPage);
           document.getElementById("overlay-content").innerHTML = view;
@@ -343,6 +337,7 @@ const nav = document.getElementById("nav");
 const name = document.getElementById("name");
 const overlay = document.getElementById("overlay");
 const cards = document.getElementsByClassName("project-card");
+const blogSelector = document.getElementById("blog");
 //console.log(cards);
 
 let uiShown = false;
@@ -369,7 +364,7 @@ document.addEventListener("click", function (e) {
           icon.dataset.fullscreen = "false";
      }
 });
-
+let paused = false;
 
 //TODO: Use URL query parameters to track expanded state
 let expanded = false;
@@ -377,23 +372,56 @@ function handleExpand() {
      if (expanded == false) {
           overlay.classList.remove("overlay--panel");
           overlay.classList.add("overlay--expanded");
+
+          nav.classList.remove("show-ui");
+          name.classList.remove("show-ui");
+
+          if (blogSelector) {
+               blogSelector.classList.remove("blog--panel");
+               blogSelector.classList.add("blog--expanded");          
+          }
+
+          uiShown = false;
+
           for (let i = 0; i < cards.length; i++) {
                cards[i].classList.remove('project-card--expanded');
                cards[i].classList.add("project-card--small");
           }
           expanded = true;
+          paused = true;
      } else {
           overlay.classList.remove("overlay--expanded");
           overlay.classList.add("overlay--panel");
+
+          nav.classList.add("show-ui");
+          name.classList.add("show-ui");
+
+          if (blogSelector) {
+               blogSelector.classList.add("blog--panel");
+               blogSelector.classList.remove("blog--expanded");          
+          }
+
+          uiShown = true;
+
           for (let i = 0; i < cards.length; i++) {
                cards[i].classList.add('project-card--expanded');
                cards[i].classList.remove("project-card--small");
           }
           expanded = false;
+          paused = false;
+          timer.reset();
+          tick();
      }
 }
-
+let gay = true
+console.log(timer);
 const tick = () => {
+
+     if (paused)
+     { 
+          return;
+     }
+
      //stats.begin();
      //controls.update;
      timer.update();
