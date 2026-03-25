@@ -1,6 +1,5 @@
 import * as THREE from "three";
 import markdownit from "markdown-it";
-import Stats from "stats.js";
 import { HDRLoader } from "three/addons/loaders/HDRLoader.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
@@ -19,10 +18,6 @@ import getProjectsPage from "./routes/projects.md?raw";
 import getContactPage from "./routes/contact.md?raw";
 import get404Page from "./routes/404.md?raw";
 import getBlogPage from "./routes/blog.md?raw";
-
-//var stats = new Stats();
-//stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
-//document.body.appendChild(stats.dom);
 
 const canvas = document.querySelector("canvas.webgl");
 const scene = new THREE.Scene();
@@ -240,7 +235,6 @@ function handleRouteChange() {
           });
      } else if (path === "/blog") {
           // Handle exact /blog route
-          //console.log("Exact /blog found!");
           view = md.render(getBlogPage); // Handle /blog exactly
           document.getElementById("overlay-content").innerHTML = view;
           document.getElementById("overlay").classList.remove("overlay--hidden");
@@ -300,8 +294,6 @@ window.addEventListener("wheel", (event) => {
      }
 });
 
-//const controls = new OrbitControls(camera, canvas);
-
 const renderPass = new RenderPass(scene, camera);
 const composer = new EffectComposer(renderer);
 composer.addPass(renderPass);
@@ -338,7 +330,6 @@ const name = document.getElementById("name");
 const overlay = document.getElementById("overlay");
 const cards = document.getElementsByClassName("project-card");
 const blogSelector = document.getElementById("blog");
-//console.log(cards);
 
 let uiShown = false;
 
@@ -366,7 +357,7 @@ document.addEventListener("click", function (e) {
 });
 let paused = false;
 
-//TODO: Use URL query parameters to track expanded state
+
 let expanded = false;
 function handleExpand() {
      if (expanded == false) {
@@ -413,35 +404,27 @@ function handleExpand() {
           tick();
      }
 }
-let gay = true
-console.log(timer);
 const tick = () => {
 
      if (paused)
      { 
           return;
      }
-
-     //stats.begin();
-     //controls.update;
      timer.update();
      const elapsedTime = timer.getElapsed();
-
+     const statueTimer = elapsedTime * 0.25;
      grassUniforms.time.value = elapsedTime;
      camera.fov = lerp(80, 100, scrollValue);
      camera.position.z = lerp(-310, -30, scrollValue);
      camera.position.y = lerp(-5, 5, scrollValue);
      camera.position.x = lerp(0, -30, scrollValue);
-     //camera.rotation.z = lerp(-Math.PI, -Math.PI * 1.1, scrollValue);
      camera.rotation.y = lerp(0, Math.PI * -0.2, scrollValue);
-     //camera.rotation.x = lerp(Math.PI, Math.PI * 0.8, scrollValue);
      camera.updateProjectionMatrix();
-     const statueTimer = elapsedTime * 0.25;
+
 
      //Statue animations
-     for (let i = 0; i < statueParts.length; i++) {
+     for (let i = 0; i < statueParts.length; i++)
           statueParts[i].position.y = -33 + (i * (Math.cos(statueTimer) + 0.95) * 1.5);
-     }
 
      // UI trigger logic
      if (scrollValue > threshold && !uiShown) {
@@ -458,34 +441,6 @@ const tick = () => {
           uiShown = false;
      }
      composer.render();
-     //stats.end();
      window.requestAnimationFrame(tick);
 };
 tick();
-
-//weird camera pathing
-// camera.fov = lerp(80, 110, scrollValue);
-// camera.position.z = lerp(-310, -20, scrollValue);
-// camera.position.y = lerp(10, -5, scrollValue);
-// camera.position.x = lerp(0, 30, scrollValue);
-// camera.rotation.z = lerp(-Math.PI, -Math.PI / 1.2, scrollValue);
-// camera.rotation.y = lerp(0, Math.PI / 3.5, scrollValue);
-// camera.rotation.x = lerp(Math.PI, Math.PI / 1.25, scrollValue);
-
-//camera.position.set(380, 15, 260);
-//camera.lookAt(0,-100, 0) //position 1
-
-
-
-
-
-
-
-
-
-//figure out expanded vs not expanded                                                         DONE
-//figure out regex to get internal routes (for the blog)                                      DONE
-//figure out how to route to the blog from project card without DOM reload                    DONE
-//start doing the blog?                                                                    STARTED
-//do a non-half-assed version of contact
-//
