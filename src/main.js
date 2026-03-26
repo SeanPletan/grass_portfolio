@@ -9,6 +9,15 @@ import getContactPage from "./routes/contact.md?raw";
 import get404Page from "./routes/404.md?raw";
 import getBlogPage from "./routes/blog.md?raw";
 
+const scrollTarget = document.getElementById("webgl");
+const canvas = document.querySelector("canvas.webgl");
+const nav = document.getElementById("nav");
+const name = document.getElementById("name");
+const overlay = document.getElementById("overlay");
+const cards = document.getElementsByClassName("project-card");
+const blogSelector = document.getElementById("blog");
+let expanded = false;
+
 const sceneCtx = scene.makeScene();
 let appState = {
      uiShown: false,
@@ -17,6 +26,7 @@ let appState = {
 };
 
 let json = [];
+let jsonLoaded = false;
 const markdownFiles = import.meta.glob('./projects/*.md', { query: 'raw' });
 
 async function loadAllMarkdown() {
@@ -27,22 +37,10 @@ async function loadAllMarkdown() {
      return result;
 }
 
-loadAllMarkdown().then(all_md => {
-     for (const path in all_md) {
-          json.push(projectParsing.projectParser(all_md[path].default));
-     }
-});
 
 
 
 
-
-const canvas = document.querySelector("canvas.webgl");
-canvas.addEventListener("click", () => {
-     history.pushState(null, "", "/");
-     handleRouteChange();
-     //tick();
-});
 
 function ensureScrolled() {
      if (appState.scrollValue < appState.threshold)
@@ -51,13 +49,25 @@ function ensureScrolled() {
      return appState.scrollValue
 }
 
-function handleRouteChange() {
+async function handleRouteChange() {
+console.log("HANDLE ROUTE CHANGE BEGAN!")
      const md = markdownit({
           html: true,
           linkify: true,
           typographer: true,
           breaks: true,
      });
+
+     // Ensure projects are loaded before rendering
+     if (!jsonLoaded) {
+          const all_md = await loadAllMarkdown();
+          for (const path in all_md) {
+               json.push(projectParsing.projectParser(all_md[path].default));
+          }
+          jsonLoaded = true;
+     }
+
+
      const path = window.location.pathname;
      let view;
 
@@ -76,8 +86,11 @@ function handleRouteChange() {
           document.getElementById("overlay-content").innerHTML = view;
           document.getElementById("overlay").classList.remove("overlay--hidden");
           document.getElementById("overlay").classList.add("overlay--panel");
-          for (const projects in json)
-               projectParsing.renderProjectCard(json[projects]);
+          console.log(json);
+          for (const projects of json) {
+               projectParsing.renderProjectCard(projects);
+          }
+
           ensureScrolled();
           document.querySelectorAll(".route").forEach((link) => {
                link.addEventListener("click", function (e) {
@@ -120,6 +133,53 @@ function handleRouteChange() {
      }
 }
 
+
+function handleExpand() {
+     if (expanded == false) {
+          overlay.classList.remove("overlay--panel");
+          overlay.classList.add("overlay--expanded");
+
+          nav.classList.remove("show-ui");
+          name.classList.remove("show-ui");
+
+          if (blogSelector) { //makes the blog half the width of the overlay, in the center when overlay--expanded
+               blogSelector.classList.remove("blog--panel");
+               blogSelector.classList.add("blog--expanded");
+          }
+
+          if (document.getElementById('projects-container')) {
+               for (let i = 0; i < cards.length; i++) {
+                    cards[i].classList.remove('project-card--expanded');
+                    cards[i].classList.add("project-card--small");
+               }
+          }
+          appState.uiShown = false;
+          expanded = true;
+     } else if (expanded == true) {
+          overlay.classList.remove("overlay--expanded");
+          overlay.classList.add("overlay--panel");
+
+          nav.classList.add("show-ui");
+          name.classList.add("show-ui");
+
+          if (blogSelector) {
+               blogSelector.classList.add("blog--panel");
+               blogSelector.classList.remove("blog--expanded");
+          }
+
+
+          if (document.getElementById('projects-container')) {
+               for (let i = 0; i < cards.length; i++) {
+                    cards[i].classList.add('project-card--expanded');
+                    cards[i].classList.remove("project-card--small");
+               }
+          }
+          appState.uiShown = true;
+          expanded = false;
+     }
+}
+
+
 handleRouteChange();
 
 window.addEventListener("popstate", handleRouteChange);
@@ -132,11 +192,6 @@ document.querySelectorAll(".route").forEach((link) => {
      });
 });
 
-
-
-
-
-const scrollTarget = document.getElementById("webgl");
 window.addEventListener("wheel", (event) => {
      if (event.target == scrollTarget) {
           appState.scrollValue += event.deltaY * 0.0008;
@@ -144,27 +199,17 @@ window.addEventListener("wheel", (event) => {
      }
 });
 
-
-
-
-
-const timer = new THREE.Timer();
-timer.connect(document);
-
-const nav = document.getElementById("nav");
-const name = document.getElementById("name");
-const overlay = document.getElementById("overlay");
-const cards = document.getElementsByClassName("project-card");
-const blogSelector = document.getElementById("blog");
-
-
+canvas.addEventListener("click", () => {
+     history.pushState(null, "", "/");
+     handleRouteChange();
+});
 
 document.addEventListener("click", function (e) {
      const icon = e.target.closest("[data-action]");
 
 
      if (!icon) return;
-     const img = icon.querySelector("img");
+     const fullscreenImg = icon.querySelector("img");
      const isFullscreen = icon.dataset.fullscreen === "true";
      const action = icon.dataset.action;
      if (action === "expand") {
@@ -172,61 +217,18 @@ document.addEventListener("click", function (e) {
      }
 
      if (!isFullscreen) {
-          img.src = "/minimize.svg"
+          fullscreenImg.src = "/minimize.svg"
           icon.dataset.fullscreen = "true";
      }
      else {
-          img.src = "/maximize.svg"
+          fullscreenImg.src = "/maximize.svg"
           icon.dataset.fullscreen = "false";
      }
 });
-let paused = false;
 
 
-let expanded = false;
-function handleExpand() {
-     if (expanded == false) {
-          overlay.classList.remove("overlay--panel");
-          overlay.classList.add("overlay--expanded");
 
-          nav.classList.remove("show-ui");
-          name.classList.remove("show-ui");
 
-          if (blogSelector) {
-               blogSelector.classList.remove("blog--panel");
-               blogSelector.classList.add("blog--expanded");          
-          }
-          appState.uiShown = false;
-
-          for (let i = 0; i < cards.length; i++) {
-               cards[i].classList.remove('project-card--expanded');
-               cards[i].classList.add("project-card--small");
-          }
-          expanded = true;
-          paused = true;
-     } else {
-          overlay.classList.remove("overlay--expanded");
-          overlay.classList.add("overlay--panel");
-
-          nav.classList.add("show-ui");
-          name.classList.add("show-ui");
-
-          if (blogSelector) {
-               blogSelector.classList.add("blog--panel");
-               blogSelector.classList.remove("blog--expanded");          
-          }
-          appState.uiShown = true;
-
-          for (let i = 0; i < cards.length; i++) {
-               cards[i].classList.add('project-card--expanded');
-               cards[i].classList.remove("project-card--small");
-          }
-          expanded = false;
-          paused = false;
-          // timer.reset();
-          // tick();
-     }
-}
 
 
 scene.startSceneTick(sceneCtx, appState, {
