@@ -45,6 +45,5 @@ export function renderBlogCard(jsonObject) {
      bodyElem.id = "blog-body";
      blog.appendChild(bodyElem);
 
-     //console.log(blog)
      return blog;
 }
