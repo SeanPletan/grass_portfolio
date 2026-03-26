@@ -11,6 +11,7 @@ export function findBlogContent(path, json) {
 export function renderBlogCard(jsonObject) {
      const blog = document.createElement('div');
      blog.id = "blog";
+     // blog.className = "blog--panel"; //bad
 
      const blogHeading = document.createElement('div');
      blogHeading.id = "blog-heading";
@@ -23,7 +24,7 @@ export function renderBlogCard(jsonObject) {
      const fullscreen = document.createElement("div");
      fullscreen.className = "icon";
      fullscreen.id = "fullscreen";
-     fullscreen.dataset.action = "expand";
+     fullscreen.dataset.action = "minimize-maximize";
 
 
 

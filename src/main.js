@@ -15,7 +15,7 @@ const nav = document.getElementById("nav");
 const name = document.getElementById("name");
 const overlay = document.getElementById("overlay");
 const cards = document.getElementsByClassName("project-card");
-const blogSelector = document.getElementById("blog");
+let blogSelector = document.getElementById("blog");
 let expanded = false;
 
 const sceneCtx = scene.makeScene();
@@ -49,8 +49,17 @@ function ensureScrolled() {
      return appState.scrollValue
 }
 
+function ensureFullscreenIcon() {
+     const icon = document.querySelector('[data-action="minimize-maximize"]');
+
+
+     if (!icon) return;
+     const fullscreenImg = icon.querySelector("img");
+     icon.dataset.fullscreen = expanded;  // automatically "true" or "false"
+     fullscreenImg.src = expanded ? "/minimize.svg" : "/maximize.svg";
+}
+
 async function handleRouteChange() {
-console.log("HANDLE ROUTE CHANGE BEGAN!")
      const md = markdownit({
           html: true,
           linkify: true,
@@ -86,7 +95,6 @@ console.log("HANDLE ROUTE CHANGE BEGAN!")
           document.getElementById("overlay-content").innerHTML = view;
           document.getElementById("overlay").classList.remove("overlay--hidden");
           document.getElementById("overlay").classList.add("overlay--panel");
-          console.log(json);
           for (const projects of json) {
                projectParsing.renderProjectCard(projects);
           }
@@ -116,7 +124,8 @@ console.log("HANDLE ROUTE CHANGE BEGAN!")
           document.getElementById("overlay").classList.remove("overlay--hidden");
           document.getElementById("overlay").classList.add("overlay--panel");
           ensureScrolled();
-          //handleExpand();
+          ensureExpandState();
+          //ensureFullscreenIcon();
      } else if (path === "/contact") {
           view = md.render(getContactPage);
           document.getElementById("overlay-content").innerHTML = view;
@@ -133,6 +142,63 @@ console.log("HANDLE ROUTE CHANGE BEGAN!")
      }
 }
 
+function ensureExpandState() {
+     if (expanded == false) {
+          overlay.classList.remove("overlay--expanded");
+          overlay.classList.add("overlay--panel");
+
+          nav.classList.add("show-ui");
+          name.classList.add("show-ui");
+
+          if (blogSelector) {
+               blogSelector.classList.add("blog--panel");
+               blogSelector.classList.remove("blog--expanded");
+          }
+          else {
+               blogSelector = document.getElementById("blog");
+               blogSelector.classList.add("blog--panel");
+               blogSelector.classList.remove("blog--expanded");
+          }
+
+
+          if (document.getElementById('projects-container')) {
+               for (let i = 0; i < cards.length; i++) {
+                    cards[i].classList.add('project-card--expanded');
+                    cards[i].classList.remove("project-card--small");
+               }
+          }
+          appState.uiShown = true;
+          expanded = false;
+     }
+     else if (expanded == true) {
+          overlay.classList.remove("overlay--panel");
+          overlay.classList.add("overlay--expanded");
+
+          nav.classList.remove("show-ui");
+          name.classList.remove("show-ui");
+
+          if (blogSelector) { //makes the blog half the width of the overlay, in the center when overlay--expanded
+               blogSelector.classList.remove("blog--panel");
+               blogSelector.classList.add("blog--expanded");
+          }
+          else {
+               blogSelector = document.getElementById("blog");
+               blogSelector.classList.remove("blog--panel");
+               blogSelector.classList.add("blog--expanded");
+          }
+
+
+          if (document.getElementById('projects-container')) {
+               for (let i = 0; i < cards.length; i++) {
+                    cards[i].classList.remove('project-card--expanded');
+                    cards[i].classList.add("project-card--small");
+               }
+          }
+          appState.uiShown = false;
+          expanded = true;
+     }
+     console.log("ensureExpandState: expanded", expanded)
+}
 
 function handleExpand() {
      if (expanded == false) {
@@ -146,6 +212,14 @@ function handleExpand() {
                blogSelector.classList.remove("blog--panel");
                blogSelector.classList.add("blog--expanded");
           }
+          else {
+               blogSelector = document.getElementById("blog");
+               if (blogSelector){
+                    blogSelector.classList.remove("blog--panel");
+                    blogSelector.classList.add("blog--expanded");               
+               }
+          }
+
 
           if (document.getElementById('projects-container')) {
                for (let i = 0; i < cards.length; i++) {
@@ -166,6 +240,13 @@ function handleExpand() {
                blogSelector.classList.add("blog--panel");
                blogSelector.classList.remove("blog--expanded");
           }
+          else {
+               blogSelector = document.getElementById("blog");
+               if (blogSelector) {
+                    blogSelector.classList.remove("blog--panel");
+                    blogSelector.classList.add("blog--expanded");
+               }
+          }
 
 
           if (document.getElementById('projects-container')) {
@@ -177,6 +258,7 @@ function handleExpand() {
           appState.uiShown = true;
           expanded = false;
      }
+     console.log("handleExpand: expanded", expanded)
 }
 
 
@@ -210,20 +292,13 @@ document.addEventListener("click", function (e) {
 
      if (!icon) return;
      const fullscreenImg = icon.querySelector("img");
-     const isFullscreen = icon.dataset.fullscreen === "true";
      const action = icon.dataset.action;
-     if (action === "expand") {
+     if (action === "minimize-maximize") {
           handleExpand();
      }
 
-     if (!isFullscreen) {
-          fullscreenImg.src = "/minimize.svg"
-          icon.dataset.fullscreen = "true";
-     }
-     else {
-          fullscreenImg.src = "/maximize.svg"
-          icon.dataset.fullscreen = "false";
-     }
+     icon.dataset.fullscreen = expanded;  // automatically "true" or "false"
+     fullscreenImg.src = expanded ? "/minimize.svg" : "/maximize.svg";
 });
 
 
