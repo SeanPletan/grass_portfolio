@@ -45,3 +45,7 @@ TODO List:
 + Figure out how to wrap the title without messing up the fullscreen icon dimensions
 
 + lots of QA, basically
+
+
+
++ Use URL query parameters to track expanded state
