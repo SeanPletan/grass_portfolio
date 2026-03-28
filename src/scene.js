@@ -26,6 +26,7 @@ export function makeScene() {
      renderer.setSize(screenSizes.width, screenSizes.height);
      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
      Cache.enabled = true;
+     scene.background = new THREE.Color(0x9095cc)
 
      const GRASS_SEGMENTS = 5;
      const GRASS_PATCH_SIZE = 300;
@@ -96,7 +97,6 @@ export function makeScene() {
      hdrLoader.loadAsync("/puresky.hdr").then((envMap) => {
           envMap.mapping = THREE.EquirectangularReflectionMapping;
           scene.background = envMap;
-          scene.environment = envMap; // for PBR lighting
           scene.backgroundRotation.y += Math.PI * 1.125;
      });
 
@@ -205,6 +205,9 @@ export function startSceneTick(sceneCtx, appState, dom) {
 
      const tick = () => {
           //console.log(appState)
+          if (appState.paused === true){
+          
+          }
           timer.update();
           const elapsedTime = timer.getElapsed();
           const statueTimer = elapsedTime * 0.25;
