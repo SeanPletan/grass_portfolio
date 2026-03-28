@@ -5,4 +5,4 @@
      </div>
 </div>
 
-<div id="projects-container"> </div>
+<div id="projects-container"></div>

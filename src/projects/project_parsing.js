@@ -129,7 +129,6 @@ function createLinkIcons(urls) {
 
 
 export function renderProjectCard(json) {
-     console.log("BEGAN RENDERPROJECTCARD()")
      if (!json)
           console.log("NO JSON!");
      const container = document.getElementById('projects-container');

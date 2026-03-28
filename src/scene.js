@@ -204,7 +204,7 @@ export function startSceneTick(sceneCtx, appState, dom) {
      timer.connect(document);
 
      const tick = () => {
-
+          //console.log(appState)
           timer.update();
           const elapsedTime = timer.getElapsed();
           const statueTimer = elapsedTime * 0.25;
@@ -222,13 +222,18 @@ export function startSceneTick(sceneCtx, appState, dom) {
                statueParts[i].position.y = -33 + (i * (Math.cos(statueTimer) + 0.95) * 1.5);
 
           // UI trigger logic
-          if (appState.scrollValue > appState.threshold && !appState.uiShown) {
+          if (appState.scrollValue > appState.threshold && !appState.uiShown && !appState.uiShownFullscreenOverruled) {
                nav.classList.add("show-ui");
                name.classList.add("show-ui");
                appState.uiShown = true;
           }
-
-          if (appState.scrollValue <= appState.threshold && appState.uiShown) {
+          else if (appState.scrollValue > appState.threshold && appState.uiShown && appState.uiShownFullscreenOverruled) {
+               //handles removing nav and name only when expanded. set by the long ass variable name
+               nav.classList.remove("show-ui");
+               name.classList.remove("show-ui");
+               appState.uiShown = false;
+          }
+          else if (appState.scrollValue <= appState.threshold && appState.uiShown) {
                nav.classList.remove("show-ui");
                name.classList.remove("show-ui");
                history.pushState(null, "", "/");

@@ -1,4 +1,3 @@
-import * as THREE from "three";
 import * as scene from './scene.js';
 import markdownit from "markdown-it";
 import * as projectParsing from "./projects/project_parsing";
@@ -15,14 +14,18 @@ const nav = document.getElementById("nav");
 const name = document.getElementById("name");
 const overlay = document.getElementById("overlay");
 const cards = document.getElementsByClassName("project-card");
-let blogSelector = document.getElementById("blog");
-let expanded = false;
+let blogSelector = null;
 
 const sceneCtx = scene.makeScene();
 let appState = {
      uiShown: false,
+     uiShownFullscreenOverruled: false,
      scrollValue: 0,
      threshold: 0.5
+};
+const overlayState = {
+     mode: "hidden", // "hidden" | "panel" | "expanded"
+     currentView: "/", // "/", "/about", "/projects", "/blog", etc.
 };
 
 let json = [];
@@ -31,8 +34,8 @@ const markdownFiles = import.meta.glob('./projects/*.md', { query: 'raw' });
 
 async function loadAllMarkdown() {
      const result = {};
-     for (const path in markdownFiles) {
-          result[path] = await markdownFiles[path]();
+     for (const projectBlog in markdownFiles) {
+          result[projectBlog] = await markdownFiles[projectBlog]();
      }
      return result;
 }
@@ -49,17 +52,64 @@ function ensureScrolled() {
      return appState.scrollValue
 }
 
-function ensureFullscreenIcon() {
+function renderOverlayState() {
+     overlay.classList.remove("overlay--hidden", "overlay--panel", "overlay--expanded");
+     overlay.classList.add(`overlay--${overlayState.mode}`);
+
+     if (overlayState.mode === "expanded") 
+          //this is for setting a flag that removes "uiShown" to nav and name 
+          //when the overlay is expanded
+          appState.uiShownFullscreenOverruled = true;
+     else
+          appState.uiShownFullscreenOverruled = false;
+
      const icon = document.querySelector('[data-action="minimize-maximize"]');
+     if (icon) {
+          const img = icon.querySelector("img");
+          if (overlayState.mode === "expanded") {
+               icon.dataset.fullscreen = true;
+               img.src = "/minimize.svg";
+          }
+          else {
+               icon.dataset.fullscreen = false;
+               img.src = "/maximize.svg"
+          }
+     }
 
+     // --------- rendering per route for expanded vs panel below ---------- //
+     if (overlayState.mode === "expanded"){
+          if (overlayState.currentView === "/projects") {
+               for (let card of cards)
+                    card.className = "project-card project-card--expanded" ;              
+          }
+          else if (overlayState.currentView === "/blog") {
+               
+          }
+          else if (overlayState.currentView.startsWith("/blog")) {
+               let blogSelector = document.getElementById("blog");
+               blogSelector.className = "blog--expanded";
+          }
+     }
 
-     if (!icon) return;
-     const fullscreenImg = icon.querySelector("img");
-     icon.dataset.fullscreen = expanded;  // automatically "true" or "false"
-     fullscreenImg.src = expanded ? "/minimize.svg" : "/maximize.svg";
+     else if (overlayState.mode === "panel") {
+          if (overlayState.currentView === "/projects") {
+               for (let card of cards)
+                    card.className = "project-card";
+          }
+          else if (overlayState.currentView === "/blog") {
+
+          }
+          else if (overlayState.currentView.startsWith("/blog")) {
+               let blogSelector = document.getElementById("blog");
+               blogSelector.className = "blog--panel";
+          }
+     }
+
 }
 
 async function handleRouteChange() {
+     const path = overlayState.currentView = window.location.pathname;
+     let view;
      const md = markdownit({
           html: true,
           linkify: true,
@@ -70,33 +120,26 @@ async function handleRouteChange() {
      // Ensure projects are loaded before rendering
      if (!jsonLoaded) {
           const all_md = await loadAllMarkdown();
-          for (const path in all_md) {
-               json.push(projectParsing.projectParser(all_md[path].default));
+          for (const projectBlog in all_md) {
+               json.push(projectParsing.projectParser(all_md[projectBlog].default));
           }
           jsonLoaded = true;
      }
 
 
-     const path = window.location.pathname;
-     let view;
+     
 
-     if (path === "/") {
-          document.getElementById("overlay").classList.remove("overlay--panel");
-          document.getElementById("overlay").classList.remove("overlay--expanded");
-          document.getElementById("overlay").classList.add("overlay--hidden");
-     } else if (path === "/about") {
+     handleOverlayStateMode(false);
+
+     if (path === "/about") {
           view = md.render(getAboutMePage);
           document.getElementById("overlay-content").innerHTML = view;
-          document.getElementById("overlay").classList.remove("overlay--hidden");
-          document.getElementById("overlay").classList.add("overlay--panel");
           ensureScrolled();
      } else if (path === "/projects") {
           view = md.render(getProjectsPage);
           document.getElementById("overlay-content").innerHTML = view;
-          document.getElementById("overlay").classList.remove("overlay--hidden");
-          document.getElementById("overlay").classList.add("overlay--panel");
-          for (const projects of json) {
-               projectParsing.renderProjectCard(projects);
+          for (let xxx of json) {
+               projectParsing.renderProjectCard(xxx)
           }
 
           ensureScrolled();
@@ -108,11 +151,8 @@ async function handleRouteChange() {
                });
           });
      } else if (path === "/blog") {
-          // Handle exact /blog route
           view = md.render(getBlogPage); // Handle /blog exactly
           document.getElementById("overlay-content").innerHTML = view;
-          document.getElementById("overlay").classList.remove("overlay--hidden");
-          document.getElementById("overlay").classList.add("overlay--panel");
           ensureScrolled();
      } else if (path.startsWith("/blog")) {
           const blogObject = blogParsing.findBlogContent(path, json);
@@ -121,144 +161,32 @@ async function handleRouteChange() {
           document.getElementById("overlay-content").innerHTML = "";
           document.getElementById("overlay-content").appendChild(view);
           document.getElementById("blog-body").innerHTML = blogBody;
-          document.getElementById("overlay").classList.remove("overlay--hidden");
-          document.getElementById("overlay").classList.add("overlay--panel");
           ensureScrolled();
-          ensureExpandState();
-          //ensureFullscreenIcon();
      } else if (path === "/contact") {
           view = md.render(getContactPage);
           document.getElementById("overlay-content").innerHTML = view;
-          document.getElementById("overlay").classList.remove("overlay--hidden");
-          document.getElementById("overlay").classList.add("overlay--panel");
           ensureScrolled();
-     } else {
+     } else if (path !== "/") {
           // Default case for 404
           view = md.render(get404Page);
           document.getElementById("overlay-content").innerHTML = view;
-          document.getElementById("overlay").classList.remove("overlay--hidden");
-          document.getElementById("overlay").classList.add("overlay--panel");
           ensureScrolled();
      }
+     renderOverlayState();
+     //console.log(overlayState, "handleRouteChange() ran!")
 }
 
-function ensureExpandState() {
-     if (expanded == false) {
-          overlay.classList.remove("overlay--expanded");
-          overlay.classList.add("overlay--panel");
 
-          nav.classList.add("show-ui");
-          name.classList.add("show-ui");
-
-          if (blogSelector) {
-               blogSelector.classList.add("blog--panel");
-               blogSelector.classList.remove("blog--expanded");
-          }
-          else {
-               blogSelector = document.getElementById("blog");
-               blogSelector.classList.add("blog--panel");
-               blogSelector.classList.remove("blog--expanded");
-          }
-
-
-          if (document.getElementById('projects-container')) {
-               for (let i = 0; i < cards.length; i++) {
-                    cards[i].classList.add('project-card--expanded');
-                    cards[i].classList.remove("project-card--small");
-               }
-          }
-          appState.uiShown = true;
-          expanded = false;
+function handleOverlayStateMode(fullscreenButtonPushed) {
+     if (fullscreenButtonPushed) {
+          overlayState.mode = overlayState.mode === "expanded" ? "panel" : "expanded";
+          renderOverlayState();     //re-render the overlay when fullscreen button is pushed
      }
-     else if (expanded == true) {
-          overlay.classList.remove("overlay--panel");
-          overlay.classList.add("overlay--expanded");
-
-          nav.classList.remove("show-ui");
-          name.classList.remove("show-ui");
-
-          if (blogSelector) { //makes the blog half the width of the overlay, in the center when overlay--expanded
-               blogSelector.classList.remove("blog--panel");
-               blogSelector.classList.add("blog--expanded");
-          }
-          else {
-               blogSelector = document.getElementById("blog");
-               blogSelector.classList.remove("blog--panel");
-               blogSelector.classList.add("blog--expanded");
-          }
-
-
-          if (document.getElementById('projects-container')) {
-               for (let i = 0; i < cards.length; i++) {
-                    cards[i].classList.remove('project-card--expanded');
-                    cards[i].classList.add("project-card--small");
-               }
-          }
-          appState.uiShown = false;
-          expanded = true;
-     }
-     console.log("ensureExpandState: expanded", expanded)
-}
-
-function handleExpand() {
-     if (expanded == false) {
-          overlay.classList.remove("overlay--panel");
-          overlay.classList.add("overlay--expanded");
-
-          nav.classList.remove("show-ui");
-          name.classList.remove("show-ui");
-
-          if (blogSelector) { //makes the blog half the width of the overlay, in the center when overlay--expanded
-               blogSelector.classList.remove("blog--panel");
-               blogSelector.classList.add("blog--expanded");
-          }
-          else {
-               blogSelector = document.getElementById("blog");
-               if (blogSelector){
-                    blogSelector.classList.remove("blog--panel");
-                    blogSelector.classList.add("blog--expanded");               
-               }
-          }
-
-
-          if (document.getElementById('projects-container')) {
-               for (let i = 0; i < cards.length; i++) {
-                    cards[i].classList.remove('project-card--expanded');
-                    cards[i].classList.add("project-card--small");
-               }
-          }
-          appState.uiShown = false;
-          expanded = true;
-     } else if (expanded == true) {
-          overlay.classList.remove("overlay--expanded");
-          overlay.classList.add("overlay--panel");
-
-          nav.classList.add("show-ui");
-          name.classList.add("show-ui");
-
-          if (blogSelector) {
-               blogSelector.classList.add("blog--panel");
-               blogSelector.classList.remove("blog--expanded");
-          }
-          else {
-               blogSelector = document.getElementById("blog");
-               if (blogSelector) {
-                    blogSelector.classList.remove("blog--panel");
-                    blogSelector.classList.add("blog--expanded");
-               }
-          }
-
-
-          if (document.getElementById('projects-container')) {
-               for (let i = 0; i < cards.length; i++) {
-                    cards[i].classList.add('project-card--expanded');
-                    cards[i].classList.remove("project-card--small");
-               }
-          }
-          appState.uiShown = true;
-          expanded = false;
-     }
-     console.log("handleExpand: expanded", expanded)
+     else if (overlayState.currentView === "/")
+          overlayState.mode = "hidden"
+     else if (overlayState.mode === "hidden")
+          overlayState.mode = "panel"
+     //otherwise (eg. /projects -> /blog), do nothing (ie. keep same overlayState mode)
 }
 
 
@@ -290,15 +218,11 @@ document.addEventListener("click", function (e) {
      const icon = e.target.closest("[data-action]");
 
 
-     if (!icon) return;
-     const fullscreenImg = icon.querySelector("img");
-     const action = icon.dataset.action;
-     if (action === "minimize-maximize") {
-          handleExpand();
-     }
+     if (!icon)
+          return;
 
-     icon.dataset.fullscreen = expanded;  // automatically "true" or "false"
-     fullscreenImg.src = expanded ? "/minimize.svg" : "/maximize.svg";
+     if (icon.dataset.action === "minimize-maximize")
+          handleOverlayStateMode(true);
 });
 
 
