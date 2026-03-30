@@ -4,3 +4,5 @@
           <img src="/maximize.svg" width="20px" height="20px" viewBox="2 2 20 20"></img>
      </div>
 </div>
+
+<div id="blog-container"></div>

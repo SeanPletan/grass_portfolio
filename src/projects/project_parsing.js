@@ -64,6 +64,24 @@ export function projectParser(md_raw) {
           json.summary = summaryLine.replace(/^summary:\s*/i, '');
      }
 
+     // --- Parse publish date --- //
+     const publishedLine = lines.find(line => line.toLowerCase().startsWith('published:'));
+     if (publishedLine) {
+          json.published = publishedLine.replace(/^published:\s*/i, '');
+     }
+
+     // --- Parse edited date --- //
+     const editedLine = lines.find(line => line.toLowerCase().startsWith('last edited:'));
+     if (editedLine) {
+          json.edited = editedLine.replace(/^last edited:\s*/i, '');
+     }
+
+     // --- Parse subheading --- //
+     const subheadingLine = lines.find(line => line.toLowerCase().startsWith('subheading:'));
+     if (subheadingLine) {
+          json.subheading = subheadingLine.replace(/^subheading:\s*/i, '');
+     }
+
      // --- Parse blog (everything after blog marker) --- //
      const blogPart = md_raw.split('<!--BLOG SECTION BELOW-->')[1];
      if (blogPart) {

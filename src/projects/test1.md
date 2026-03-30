@@ -8,6 +8,11 @@
 
 #### 'Embedded Systems' 'Automotive' 'Low Level Communications' 'Tag Example #4'
 
+published:March 19, 2026
+last edited:March 25, 2026
+
+subheading:This is a matcap image that I used for the head. I like the colors.
+
 summary:This is a simple little introduction to the simple little test project. Below this will be some sort of separator which the program will search for, and only render the text above it in the projects section. Below it will be rendered in the blog section.
 
 <!--BLOG SECTION BELOW-->

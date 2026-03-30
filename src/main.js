@@ -58,7 +58,7 @@ function renderOverlayState() {
 
      if (overlayState.mode === "expanded") 
           //this is for setting a flag that removes "uiShown" to nav and name 
-          //when the overlay is expanded
+          //whFren the overlay is expanded
           appState.uiShownFullscreenOverruled = true;
      else
           appState.uiShownFullscreenOverruled = false;
@@ -153,11 +153,25 @@ async function handleRouteChange() {
      } else if (path === "/blog") {
           view = md.render(getBlogPage); // Handle /blog exactly
           document.getElementById("overlay-content").innerHTML = view;
+          for (let xxx of json) {
+               if (xxx.blog)
+                    blogParsing.renderBlogCard(xxx)
+          }
+
+
           ensureScrolled();
+
+          document.querySelectorAll(".route").forEach((link) => {
+               link.addEventListener("click", function (e) {
+                    e.preventDefault();
+                    history.pushState(null, "", this.href);
+                    handleRouteChange();
+               });
+          });
      } else if (path.startsWith("/blog")) {
           const blogObject = blogParsing.findBlogContent(path, json);
           const blogBody = md.render(blogObject.blog);
-          view = blogParsing.renderBlogCard(blogObject); // Handle /blog/[subpath]
+          view = blogParsing.renderBlogPage(blogObject); // Handle /blog/[subpath]
           document.getElementById("overlay-content").innerHTML = "";
           document.getElementById("overlay-content").appendChild(view);
           document.getElementById("blog-body").innerHTML = blogBody;
@@ -174,6 +188,7 @@ async function handleRouteChange() {
      }
      renderOverlayState();
      //console.log(overlayState, "handleRouteChange() ran!")
+     console.log(json)
 }
 
 
