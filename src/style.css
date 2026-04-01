@@ -431,6 +431,18 @@ a {
      margin: 20px 20px 0px 20px;
 }
 
+#blog-body > * > li{
+     width: calc(100% - 40px);
+     margin: 0px 0px 0px 20px;
+     font-size: 14px;
+}
+
+#blog-body img {
+     width: 100%;
+     aspect-ratio: 3/2;
+     object-fit: cover;
+}
+
 #metadata {
      display: flex;
      width: calc(100% - 40px);
