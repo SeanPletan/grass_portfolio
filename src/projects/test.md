@@ -30,17 +30,11 @@ Donec at tellus ut ligula scelerisque tincidunt. Morbi nec rhoncus ligula. Mauri
 Curabitur feugiat porta quam et tincidunt. Nunc ac risus sit amet neque scelerisque gravida in sit amet nibh. Ut viverra arcu ut sodales condimentum. Donec eget hendrerit purus. In tincidunt consequat elementum. Nam vitae ante nisl. Vivamus nec volutpat nulla.
 
 TODO List:
++ Shrink overlay for contact me section to 270px?
 + Create a little nav bar that goes to "About Me", "Projects", "Blog", and "Contact Me" in the top left corner, visible only when in its expanded state in blog and projects
-+ Actually do the blog section
-     + Probably make another function in blog_parsing.js to parse .md files in /blogs
-     + You'd have to do another function in main.js which automatically imports and parses each blog .md (the async function). Consider making it synchronous
-     + You'd have to create another function to render the blog_cards... Which should consist of a headline and a short sub-headline only. Should be horizontal. Grid-like pattern. Maybe a "X minute read" too.
-+ Actually do the contact section
++ MOBILE DENIER ("Unfortunately, this website does not yet support mobile usage. Please use a PC to access my page. Sorry for the inconvenience! I'm working on it right now!")
++ Transfer over all of the projects and assets from the old website
++ Remove the grass where the sculpture is
++ Slowly orbit around the sculpture when scrolled is == 1
+     * If the camera is not on the predefined vector path
 
-+ Figure out how to wrap the title without messing up the fullscreen icon dimensions
-
-+ lots of QA, basically
-
-
-
-+ Use URL query parameters to track expanded state
