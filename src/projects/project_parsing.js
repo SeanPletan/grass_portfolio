@@ -88,7 +88,6 @@ export function projectParser(md_raw) {
           json.blog = blogPart
      }
 
-     //json.links.push("/blog/hello_blog");
      return json;
 }
 

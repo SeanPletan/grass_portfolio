@@ -8,6 +8,32 @@ import getContactPage from "./routes/contact.md?raw";
 import get404Page from "./routes/404.md?raw";
 import getBlogPage from "./routes/blog.md?raw";
 
+
+if (window.innerWidth <= 768) {
+     document.body.innerHTML = `
+    <div style="
+      height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-direction: column;
+      text-align:center;
+      font-size:20px;
+      padding-left: 20px;
+      padding-right: 20px;
+      color: white;
+      background-color: black;
+      font-family: inter;
+    ">
+      <p>Unfortunately, this website does not yet support mobile usage.</p>
+      <p>The 3D scene is pretty resource intensive (very, very laggy on mobile devices), and responsiveness has not yet been implemented.</p>
+      <p>Please use a PC to access my page. Sorry for the inconvenience!</p>
+      <p>I’m working on it right now!</p>
+      <p> -Sean </p>
+    </div>
+  `;
+}
+
 const scrollTarget = document.getElementById("webgl");
 const canvas = document.querySelector("canvas.webgl");
 const nav = document.getElementById("nav");
@@ -187,8 +213,10 @@ async function handleRouteChange() {
           ensureScrolled();
      }
      renderOverlayState();
-     //console.log(overlayState, "handleRouteChange() ran!")
-     console.log(json)
+
+     let spacer = document.createElement("div");
+     spacer.className = "spacer"
+     document.getElementById("overlay-content").appendChild(spacer);
 }
 
 

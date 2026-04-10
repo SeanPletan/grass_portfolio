@@ -11,7 +11,7 @@ subheading:This is a screenshot of the live website, showcasing the particle sys
 
 summary: The project converts an image into a grid of circular particles using shaders, where each particle’s size and brightness are based on the corresponding pixel values. It also adds an interactive animation driven by a canvas-based displacement texture, creating a smooth “trailing” effect as particles react to cursor movement. Overall, the result improves visual quality over the original image by reducing low-resolution artifacts and enabling adjustable detail, though it introduces trade-offs like particle overlap and moiré patterns.
 
-<!-- BLOG BELOW -->
+<!--BLOG SECTION BELOW-->
 
 This project is the most visually interesting to me if I view it through an image processing lens. First, however, an overview. The basic project setup common in all of these projects is still present (setting up the canvas, renderer, animation loop, window resize event listeners, etc.). But then there are 2 distinct parts of the code: Retexturing the image such that it is a grid of particles, and then animating that grid. I'll go over the retexturing first.
 
@@ -23,14 +23,7 @@ So, you might have noticed that when your cursor hovers above a particle, and th
 
 Specifically, I apply a random angle (taken from the main JavaScript file, where it was declared as a float32 array of random float values, passed by the attribute aAngle) to the x and y coordinates of the new position. The z part of the new position is directly controlled by the offsetNormalcy lil-gui tweak. For a value of 0.01, the z value is 0.01 SI units away from the original position. The same is true for an offsetNormalcy value of 2.0, for example. The qualitative effect this has, is that the random angle increases as the z value is smaller. So, if you look at the image texture straight on (in other words, if you didn't move the camera), it looks like the offset increases.
 
+<img src="/halftone_input.png" alt="A black and white image of a veiny hand, used as the input image" style="image-rendering: pixelated"></img>
+The input image
+
 Now, I'd like to take a good look at the final product, and compare it with the original image. The original image (called picture-2.jpg in the code snippet) is a 128x128 pixel image. It's square and greyscale. Also note that the background is very dark, while the subject of the image is very bright. The first thing you might notice about the final product in comparison to the input image is the distinct lack of stair-stepping and anti-aliasing artifacts. Due to the nature of the algorithm, they're still there of course, but because the pixels have been turned into particles/circles, diagonal edges are much more pleasing to the eye. If you, the end-user, increase the number of particles, this acts as a sort of upscaling. The edges are much more defined, because there are small particles in the corners of larger particles. It levels it out. However, of course, as you increase the number of particles, the particle size stays at the default value, leading to overlap, and a breaking of the illusion of progress. Clearly, this is a limitation in ease of use, but I still find fun playing with it. The next thing the end-user might notice are moiré patterns in the background, if they mess with the exponentialContrast tweak. I could cull any particle under a certain color value or size (relative to the rest of the particles), but it may break certain images.
-
-This and the following project are the ones I'm most interested in improving. For this project, I want to implement the following features:
-
-+    Allow the end user to upload their own images. I would have to either make the user upload to a server, or (I'm not sure if this is possible) allow the user's browser to store the image in local storage, and access it that way. The only reason why I would implement the latter is because if I were to allow the user to upload to the server, I would need to clean and validate the input thoroughly.
-+    Cull particles below a certain size and/or color threshold to avoid moiré patterns in dark areas of images
-+    Work around non-square images. I would have to detect the size of an input image, and then use that size as in input into the PlaneGeometry() initialization
-+    Allow the end-user to turn on/off the animation.
-+    Allow the end-user to modify the speed of the animation.
-+    Allow color images.
-+    Increase particle size and color for only the subject of the image. You might have noticed that the pinky nail or some of the finger wrinkles are not very visible at all, comapred to the input image. That is a problem.

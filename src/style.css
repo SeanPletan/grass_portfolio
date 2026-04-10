@@ -38,6 +38,23 @@ a {
      text-decoration: inherit;
 }
 
+pre {
+     background: rgba(244, 244, 244, 0.5);
+     border: 1px solid #ddd;
+     border-left: 3px solid #f36d33;
+     color: #444;
+     page-break-inside: avoid;
+     font-family: monospace;
+     font-size: 15px;
+     line-height: 1.6;
+     margin-bottom: 1.6em;
+     max-width: 100%;
+     overflow: auto;
+     padding: 1em 1.5em;
+     display: block;
+     word-wrap: break-word;
+}
+
 .webgl {
      position: fixed;
      top: 0;
@@ -189,10 +206,10 @@ a {
 .glass-card {
      isolation: isolate;
      box-shadow: 0px 6px 24px rgba(0, 0, 0, 0.2);
-     backdrop-filter: blur(5px);
-     -webkit-backdrop-filter: blur(5px);
+     backdrop-filter: blur(6px);
+     -webkit-backdrop-filter: blur(6px);
      border: 1px solid rgba(255, 255, 255, 0.6);
-     background: rgba(255, 255, 255, 0.1);
+     background: rgba(255, 255, 255, 0.2);
 }
 
 .glass-card::before {
@@ -202,7 +219,7 @@ a {
      z-index: -1;
      border-radius: 20px;
      box-shadow: inset 0 0 20px -5px rgba(255, 255, 255, 0.7);
-     background: rgba(255, 255, 255, 0.05);
+     background: rgba(255, 255, 255, 0.1);
 }
 
 .glass-card::after {
@@ -211,8 +228,12 @@ a {
      inset: 0;
      z-index: -2;
      border-radius: 20px;
-     backdrop-filter: blur(5px);
+     backdrop-filter: blur(6px);
      isolation: isolate;
+}
+
+.spacer {
+     height: 60px;
 }
 
 /* ----------  Project Card Below ------------- */
@@ -379,8 +400,29 @@ a {
      transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+#blog a {
+     font-family: inherit;
+     color: navy;
+}
+
+#blog a:visited {
+     color: darkmagenta;
+}
+
+#blog pre {
+     width: calc(100% - 3em - 40px - 4px)
+}
+
+#blog-body h1 {
+     font-size: 28px;
+     font-weight: bold;
+}
+#blog-body h2 {
+     font-size: 20px;
+}
+
 .blog--expanded {
-     width: 50%;
+     width: 55%;
      margin-left: auto;
      margin-right: auto;
 }
@@ -431,6 +473,12 @@ a {
      margin: 20px 20px 0px 20px;
 }
 
+/* #blog-body > * > *{
+     width: 100%;
+     display: block;
+     background-color: yellow;
+} */
+
 #blog-body > * > li{
      width: calc(100% - 40px);
      margin: 0px 0px 0px 20px;
@@ -439,9 +487,13 @@ a {
 
 #blog-body img {
      width: 100%;
-     aspect-ratio: 3/2;
      object-fit: cover;
+     border-radius: 5px;
 }
+
+/* .forced-aspect-ratio {
+     aspect-ratio: 3/2;
+} */
 
 #metadata {
      display: flex;

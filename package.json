@@ -17,6 +17,7 @@
   "dependencies": {
     "@three.ez/instanced-mesh": "^0.3.13",
     "markdown-it": "^14.1.1",
+    "markdown-it-attrs": "^4.3.1",
     "stats.js": "^0.17.0",
     "three": "^0.182.0"
   }
