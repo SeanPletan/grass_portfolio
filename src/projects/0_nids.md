@@ -4,6 +4,9 @@
 
 ## Links: https://github.com /blog/intrusion_detection_system
 
+published: April 25, 2025
+last edited: April 13, 2026
+
 subheading: A ridiculous representation of a network that is semi-pleasing to the eyes.
 
 summary: I created an intrusion detection system that can be deployed on any network. There are many pre-compiled datasets for the explicit purpose of network intrusion detection. However, this was a semester-long university project, and one of the constraints was end-to-end data collection and processing. A machine learning model was trained on the processed data, and any intercepted network packet can be evaluated for the probability of being anomalous. 

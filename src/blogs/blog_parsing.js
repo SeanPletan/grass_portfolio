@@ -107,6 +107,9 @@ export function renderBlogCard(jsonObject) {
      const container = document.getElementById('blog-container');
      if (!container) return;
 
+     const cardAndLineContainer = document.createElement('div');
+     cardAndLineContainer.className = "card-and-line-container";
+
 
      const blogCard = document.createElement('a');
      blogCard.className = "blog-card route"
@@ -134,12 +137,14 @@ export function renderBlogCard(jsonObject) {
      blogCard.appendChild(blogCardText);
      blogCard.appendChild(blogCardImg);
 
-     container.appendChild(blogCard);
+     cardAndLineContainer.appendChild(blogCard);
 
 
      const horizontalLine = document.createElement('div');
      horizontalLine.className = "horizontal-line";
-     container.appendChild(horizontalLine);
+     cardAndLineContainer.appendChild(horizontalLine);
+
+     container.appendChild(cardAndLineContainer);
 
 }
 

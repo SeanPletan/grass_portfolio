@@ -85,8 +85,8 @@ export function makeScene() {
      const groundGeometry = new THREE.PlaneGeometry(
           GRASS_PATCH_SIZE * 2,
           GRASS_PATCH_SIZE * 2,
-          256,
-          256,
+          32,
+          32,
      );
      const ground = new THREE.Mesh(groundGeometry, groundMaterial);
      ground.rotateX(-Math.PI / 2);
@@ -194,7 +194,7 @@ export function makeScene() {
      };
 
 }
-
+     
 
 
 export function startSceneTick(sceneCtx, appState, dom) {
@@ -203,11 +203,14 @@ export function startSceneTick(sceneCtx, appState, dom) {
      const timer = new THREE.Timer();
      timer.connect(document);
 
+     composer.renderer.info.autoReset = false;
+
      const tick = () => {
           //console.log(appState)
-          if (appState.paused === true){
+          // if (appState.paused === true){
           
-          }
+          // }
+
           timer.update();
           const elapsedTime = timer.getElapsed();
           const statueTimer = elapsedTime * 0.25;
@@ -229,6 +232,7 @@ export function startSceneTick(sceneCtx, appState, dom) {
                nav.classList.add("show-ui");
                name.classList.add("show-ui");
                appState.uiShown = true;
+               console.log(composer)
           }
           else if (appState.scrollValue > appState.threshold && appState.uiShown && appState.uiShownFullscreenOverruled) {
                //handles removing nav and name only when expanded. set by the long ass variable name
@@ -245,8 +249,9 @@ export function startSceneTick(sceneCtx, appState, dom) {
                document.getElementById("overlay").classList.add("overlay--hidden");
                appState.uiShown = false;
           }
-
+          composer.renderer.info.reset();
           composer.render();
+          console.log(composer.renderer.info.render.calls, composer.renderer.info.render.triangles);
           requestAnimationFrame(tick);
      };
 

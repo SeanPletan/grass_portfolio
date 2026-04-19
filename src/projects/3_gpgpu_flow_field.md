@@ -7,7 +7,7 @@
 published: January 17, 2025
 last edited: March 31, 2026
 
-subheading:A .glltf model of a ship made out of hundreds of thousands of particles, computed with the GPU
+subheading:A .gltf model of a ship made out of hundreds of thousands of particles, computed with the GPU
 
 summary:This scene demonstrates particle shading, GPGPU, and flow fields by rendering a 3D model as hundreds of thousands of animated particles whose size, color, position, and lifespan are computed on the GPU. Particle data is stored in frame buffer objects (FBOs), which are updated each frame using a ping-pong technique so the GPU can efficiently process all particles in parallel. Movement is driven by a time-varying 4D simplex noise based flow field.
 

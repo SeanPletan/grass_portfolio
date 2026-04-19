@@ -538,7 +538,7 @@ pre {
 
 .blog-card {
      display: flex;
-     padding: 20px 20px 20px 20px;
+     padding: 80px 20px 20px 20px;
      width: calc(100% - 40px);
      overflow: hidden;
      gap: 20px;
@@ -576,6 +576,11 @@ pre {
      margin-left: 20px;
      width: calc(100% - 40px);
 
+}
+#blog-container {
+     display: flex;
+     flex-direction: row;
+     flex-wrap: wrap;
 }
 
 #blog-container > :last-child { /* no horizontal divider on last element */

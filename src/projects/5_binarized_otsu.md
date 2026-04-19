@@ -12,12 +12,12 @@ summary: This Python project simulates how medical systems count red blood cells
 
 Like the following project, this was made for my digital image processing class. However, I deem it complicated enough for this portfolio. I feel like it rounds out the topic selection. In the medical industry, machines are used to count red blood cells in a given sample. These machines capture a microscope image of the sample, binarize the image, and apply an algorithm to determine the number of ivory areas (blood cells) present. My program (coded in Python) follows a similar general algorithm:
 
-+    Compute the histogram of the image
-+    Find the optimal threshold to determine whether a pixel is ivory or black
-+    Binarize the image given that threshold
-+    Create a 2 dimensional matrix the same size as the image, and then assign every index corresponding to a pixel in image a unique number if it is not a part of a current blob (this is called blob coloring)
-+    Compute the center of the blob
-+    Overwrite the image by putting text on the center of every blob (with a period or an asterisk)
+1.    Compute the histogram of the image
+2.    Find the optimal threshold to determine whether a pixel is ivory or black
+3.    Binarize the image given that threshold
+4.    Create a 2 dimensional matrix the same size as the image, and then assign every index corresponding to a pixel in image a unique number if it is not a part of a current blob (this is called blob coloring)
+5.    Compute the center of the blob
+6.    Overwrite the image by putting text on the center of every blob (with a period or an asterisk)
 
 I will go through each step in depth.
 
@@ -28,10 +28,10 @@ The histogram for the input image. The pixel values (intensities) are on the x-a
 
 The next step is to take this histogram as an input to the function that determines the optimal threshold. As aforementioned, this function uses Otsu's method. Note that Otsu's method is best used for images with a bimodal histogram (in other words, if the image has a lot of light and dark areas). This works well for our input image of red blood cells against a dark background. Now, the algorithm:
 
-+    Count or calculate how many pixels there are in the image. This is to calculate the probability distribution function. In other words, the probability of each pixel value occurrence.
-+    Create an array of probabilities by looping through the histogram array and dividing each value by the total amount of pixels. Store the result in the probabilities array.
-+    Initialize the weight0, weight1, variance0, and variance1 to 0. weight is the summation of all probabilities in that class, variance is the summation of each pixel value, multiplied by its probability, divided by that classes' weight. The class is defined as the area of the histogram above or below a threshold.
-+    Calculate the inter-class variance for every possible threshold (0 to 255) by using this equation: weight0 * weight 1 * ((variance0 - variance1)**2). Rewrite a variable called maximum if the current threshold is higher than the current maximum threshold.
+1.    Count or calculate how many pixels there are in the image. This is to calculate the probability distribution function. In other words, the probability of each pixel value occurrence.
+2.    Create an array of probabilities by looping through the histogram array and dividing each value by the total amount of pixels. Store the result in the probabilities array.
+3.    Initialize the weight0, weight1, variance0, and variance1 to 0. weight is the summation of all probabilities in that class, variance is the summation of each pixel value, multiplied by its probability, divided by that classes' weight. The class is defined as the area of the histogram above or below a threshold.
+4.    Calculate the inter-class variance for every possible threshold (0 to 255) by using this equation: weight0 * weight 1 * ((variance0 - variance1)**2). Rewrite a variable called maximum if the current threshold is higher than the current maximum threshold.
 
 What this does, is very neatly visualized in this gif found on the Wikipedia page for Otsu's Method. Otsu's method is best used for images with a bimodal histogram (in other words, if the image has a lot of light and dark areas). This works well for our input image of red blood cells against a dark background.
 
@@ -53,6 +53,7 @@ For binary image I, define a "region color" array R.
 R(i,j) = region number of pixel I(i,j)
 Set R = 0 and k = 1 (k = region number counter)
 While scanning the image left-to-right and top-to-bottom do:
+
      If I(i, j) = 1 and I(i, j-1) = 0 and I(i-1, j) = 0, then set R(i, j) = k and k = k +1
      If I(i, j) = 1 and I(i, j-1) = 0 and I(i-1, j) = 1, then set R(i, j) = R(i-1, j)
      If I(i, j) = 1 and I(i, j-1) = 1 and I(i-1, j) = 0, then set R(i, j) = R(i, j-1)
