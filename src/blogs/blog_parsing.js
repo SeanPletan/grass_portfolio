@@ -50,6 +50,14 @@ export function renderBlogPage(jsonObject) {
      byImgContainer.appendChild(byLine);
      metadata.appendChild(byImgContainer);
 
+     if (jsonObject.links?.length) {
+          const linksContainer = document.createElement('div');
+          linksContainer.className = 'links-container';
+          const icons = createLinkIcons(jsonObject.links);
+          linksContainer.appendChild(icons);
+          metadata.appendChild(linksContainer);
+     }
+
      const dates = document.createElement('div');
      dates.id = "blog-dates";
 
@@ -103,6 +111,65 @@ export function renderBlogPage(jsonObject) {
 }
 
 
+function getLinkMeta(url) {
+     if (url.includes("github.com")) {
+          return {
+               label: "GitHub",
+               icon: "/github.svg"
+          };
+     }
+
+     else if (url.includes("http")) {
+          return {
+               label: "Live Site",
+               icon: "/arrow-out-up-right-circle.svg"
+          };
+     }
+
+     // fallback
+     return {
+          label: "Blog",
+          icon: "/article.svg"
+     };
+}
+
+function createLinkIcons(urls) {
+     const container = document.createElement("div");
+     container.className = "link-icon-container";
+
+
+     for (let url = 0; url < urls.length; url++)
+     {
+          const { label, icon } = getLinkMeta(urls[url]);
+
+          if (label == "Blog")
+               break;
+
+          const wrapper = document.createElement("div");
+          wrapper.className = "blog-link-icon";
+
+          const link = document.createElement("a");
+          link.href = urls[url];
+          link.className = "blog-reveal-btn route";
+
+          const labelEl = document.createElement("div");
+          labelEl.className = "blog-label";
+          labelEl.textContent = label;
+
+          const img = document.createElement("img");
+          img.src = icon;
+          img.width = 20;
+          img.height = 20;
+
+          link.append(labelEl, img);
+          wrapper.appendChild(link);
+          container.appendChild(wrapper);
+     };
+
+     return container;
+}
+
+
 export function renderBlogCard(jsonObject) {
      const container = document.getElementById('blog-container');
      if (!container) return;
@@ -113,7 +180,12 @@ export function renderBlogCard(jsonObject) {
 
      const blogCard = document.createElement('a');
      blogCard.className = "blog-card route"
-     blogCard.href = jsonObject.links[2];
+     for (let xx = 0; xx < jsonObject.links.length; xx++)
+     {
+          if (jsonObject.links[xx].includes("/blog"))
+               blogCard.href = jsonObject.links[xx];
+     }
+
 
      const blogCardText = document.createElement('div');
      blogCardText.className = "blog-card-text";

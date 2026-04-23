@@ -2,7 +2,7 @@
 
 ![a ridiculous representation of a network](/weird_network_graphic.jpg)
 
-## Links: https://github.com /blog/intrusion_detection_system
+## Links: /blog/intrusion_detection_system
 
 published: April 25, 2025
 last edited: April 13, 2026

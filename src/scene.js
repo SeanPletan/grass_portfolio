@@ -193,23 +193,19 @@ export function makeScene() {
           statueParts
      };
 
-}
-     
+}  
 
 
 export function startSceneTick(sceneCtx, appState, dom) {
      const { camera, composer, grassUniforms, statueParts } = sceneCtx;
      const { nav, name } = dom;
      const timer = new THREE.Timer();
+     let rafId = null;
+     let running = false;
      timer.connect(document);
 
-     composer.renderer.info.autoReset = false;
-
      const tick = () => {
-          //console.log(appState)
-          // if (appState.paused === true){
-          
-          // }
+          if (!running) return;
 
           timer.update();
           const elapsedTime = timer.getElapsed();
@@ -232,7 +228,6 @@ export function startSceneTick(sceneCtx, appState, dom) {
                nav.classList.add("show-ui");
                name.classList.add("show-ui");
                appState.uiShown = true;
-               console.log(composer)
           }
           else if (appState.scrollValue > appState.threshold && appState.uiShown && appState.uiShownFullscreenOverruled) {
                //handles removing nav and name only when expanded. set by the long ass variable name
@@ -249,11 +244,34 @@ export function startSceneTick(sceneCtx, appState, dom) {
                document.getElementById("overlay").classList.add("overlay--hidden");
                appState.uiShown = false;
           }
-          composer.renderer.info.reset();
           composer.render();
-          console.log(composer.renderer.info.render.calls, composer.renderer.info.render.triangles);
-          requestAnimationFrame(tick);
+          rafId = requestAnimationFrame(tick);
      };
 
-     tick();
+     function startLoop() {
+          if (running) return;   // prevent double loops
+          running = true;
+          timer.reset();         // prevents huge time jump on resume
+          timer.update();
+          rafId = requestAnimationFrame(tick);
+          console.log("started loop");
+     }
+
+     function pauseLoop() {
+          running = false;
+          if (rafId !== null) {
+               cancelAnimationFrame(rafId);
+               rafId = null;
+          }
+     }
+
+     startLoop();
+     return {
+          pause: pauseLoop,
+          resume: startLoop,
+          syncWithAppState: () => {
+               if (appState.paused) pauseLoop();
+               else startLoop();
+          }
+     };
 }

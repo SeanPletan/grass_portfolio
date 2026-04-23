@@ -32,7 +32,9 @@ export function projectParser(md_raw) {
 
           if (/\/blog\S*/.test(line)) {
                const match = line.match(/\/blog\S*/);
-               if (match)
+               if (!json.links)
+                    json.links = match;
+               else if (match)
                     json.links.push(match[0]);
                continue;
           }
@@ -136,7 +138,7 @@ function createLinkIcons(urls) {
           img.width = 20;
           img.height = 20;
 
-          link.append(labelEl, img);
+          link.append(img, labelEl);
           wrapper.appendChild(link);
           container.appendChild(wrapper);
      });
@@ -146,8 +148,6 @@ function createLinkIcons(urls) {
 
 
 export function renderProjectCard(json) {
-     if (!json)
-          console.log("NO JSON!");
      const container = document.getElementById('projects-container');
      if (!container) return;
 
@@ -161,15 +161,6 @@ export function renderProjectCard(json) {
      titleElem.textContent = json.title;
      cardTitle.appendChild(titleElem);
 
-     //TODO: Re-Do this to dynamically assign a.textContent based on top-level domain name or, if it links to blog, just "Blog"
-     if (json.links?.length) {
-          const linksContainer = document.createElement('div');
-          linksContainer.className = 'links-container';
-          const icons = createLinkIcons(json.links);
-          linksContainer.appendChild(icons);
-          cardTitle.appendChild(linksContainer);
-     }
-
      card.appendChild(cardTitle);
 
      const ImgElem = document.createElement('img');
@@ -177,6 +168,15 @@ export function renderProjectCard(json) {
      ImgElem.alt = json.imageTitle;
      ImgElem.className = 'project-card-img';
      card.appendChild(ImgElem);
+
+     //TODO: Re-Do this to dynamically assign a.textContent based on top-level domain name or, if it links to blog, just "Blog"
+     if (json.links?.length) {
+          const linksContainer = document.createElement('div');
+          linksContainer.className = 'links-container';
+          const icons = createLinkIcons(json.links);
+          linksContainer.appendChild(icons);
+          card.appendChild(linksContainer);
+     }
 
      if (json.summary) {
           const p = document.createElement('p');

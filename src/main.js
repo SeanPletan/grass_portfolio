@@ -44,6 +44,7 @@ let blogSelector = null;
 
 const sceneCtx = scene.makeScene();
 let appState = {
+     paused: false,
      uiShown: false,
      uiShownFullscreenOverruled: false,
      scrollValue: 0,
@@ -150,6 +151,7 @@ async function handleRouteChange() {
                json.push(projectParsing.projectParser(all_md[projectBlog].default));
           }
           jsonLoaded = true;
+          console.log(json);
      }
 
 
@@ -217,6 +219,7 @@ async function handleRouteChange() {
      let spacer = document.createElement("div");
      spacer.className = "spacer"
      document.getElementById("overlay-content").appendChild(spacer);
+     document.getElementById("overlay-content").scrollTop = 0;
 }
 
 
@@ -224,11 +227,21 @@ function handleOverlayStateMode(fullscreenButtonPushed) {
      if (fullscreenButtonPushed) {
           overlayState.mode = overlayState.mode === "expanded" ? "panel" : "expanded";
           renderOverlayState();     //re-render the overlay when fullscreen button is pushed
+          if (overlayState.mode === "expanded")
+          {
+               appState.paused = true;
+               sceneController.pause();          
+          }
+          if (overlayState.mode === "panel") {
+               appState.paused = false;
+               sceneController.resume();
+          }
      }
      else if (overlayState.currentView === "/")
-          overlayState.mode = "hidden"
+          overlayState.mode = "hidden";
      else if (overlayState.mode === "hidden")
-          overlayState.mode = "panel"
+          overlayState.mode = "panel"; 
+
      //otherwise (eg. /projects -> /blog), do nothing (ie. keep same overlayState mode)
 }
 
@@ -273,7 +286,7 @@ document.addEventListener("click", function (e) {
 
 
 
-scene.startSceneTick(sceneCtx, appState, {
+const sceneController = scene.startSceneTick(sceneCtx, appState, {
      nav,
      name
 });

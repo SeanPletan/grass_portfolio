@@ -254,6 +254,9 @@ pre {
      transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.project-card > p {
+     margin-left: 7px;
+}
 .project-card--panel {
      width: 100%;
 }
@@ -263,16 +266,9 @@ pre {
 
 }
 
-.card-title {
-     display: flex;
-     flex-flow: row nowrap;
-}
-
 .card-title > h2 {
      font-size: 24px;
-     line-height: 30px;
      text-align: left;
-     width: 60%
 }
 
 .project-card>img {
@@ -286,7 +282,6 @@ pre {
 }
 
 .links-container {
-     margin-left: auto;
      display: flex;
      flex-flow: row wrap;
      gap: 5px;
@@ -355,7 +350,7 @@ pre {
 }
 
 .link-icon-container > *:last-child {
-     padding-right: 0;
+     padding-left: 0;
 }
 
 .link-icon {
@@ -368,7 +363,7 @@ pre {
 .reveal-btn {
      display: inline-flex;
      align-items: center;
-     justify-content: flex-end;
+     justify-content: flex-start;
 
      width: 20px;
      height: 20px;
@@ -491,15 +486,21 @@ pre {
      border-radius: 5px;
 }
 
-/* .forced-aspect-ratio {
-     aspect-ratio: 3/2;
-} */
+#fullscreen {
+align-self: baseline;
+     min-width: 30px;
+     min-height: 30px;   
+}
 
 #metadata {
      display: flex;
      width: calc(100% - 40px);
      margin: 10px 20px 40px 20px;
      justify-content: space-between;
+}
+
+#metadata a {
+     color: black;
 }
 
 #by {
@@ -585,6 +586,51 @@ pre {
 
 #blog-container > :last-child { /* no horizontal divider on last element */
      border: none;
+}
+
+/* --------- BLOG LINKS BELOW ------------ */
+
+.blog-link-icon {
+     display: flex;
+     justify-content: flex-end;
+     padding: 0 2.5px 0 2.5px;
+     height: 35px;
+}
+
+.blog-links-container {
+     margin-left: auto;
+     display: flex;
+     flex-flow: row wrap;
+     gap: 5px;
+}
+
+.blog-reveal-btn {
+     display: inline-flex;
+     align-items: center;
+     justify-content: flex-end;
+
+     width: 20px;
+     height: 20px;
+     padding: 5px;
+     gap: 5px;
+
+     overflow: hidden;
+     white-space: nowrap;
+
+     background-color: rgba(255, 255, 255, 0.25);
+     border: 0.5px solid rgba(255, 255, 255, 0.3);
+     border-radius: 5px;
+     box-shadow: rgba(0, 0, 0, 0.8) 0px 5px 50px 0px;
+     color: rgb(0, 0, 0);
+
+     cursor: pointer;
+
+     transition: width 180ms ease;
+}
+
+.blog-link-icon:hover .blog-reveal-btn {
+     width: 90px;
+     background-color: rgba(190, 190, 190, 0.25);
 }
 
 

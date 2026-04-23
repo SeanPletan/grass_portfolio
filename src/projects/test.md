@@ -32,8 +32,6 @@ Curabitur feugiat porta quam et tincidunt. Nunc ac risus sit amet neque sceleris
 TODO List:
 + Shrink overlay for contact me section to 270px?
 + Create a little nav bar that goes to "About Me", "Projects", "Blog", and "Contact Me" in the top left corner, visible only when in its expanded state in blog and projects
-+ MOBILE DENIER ("Unfortunately, this website does not yet support mobile usage. Please use a PC to access my page. Sorry for the inconvenience! I'm working on it right now!")
-+ Transfer over all of the projects and assets from the old website
 + Remove the grass where the sculpture is
 + Slowly orbit around the sculpture when scrolled is == 1
      * If the camera is not on the predefined vector path

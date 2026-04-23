@@ -18,8 +18,7 @@ This blog is divided into three sections: Shader Trickery and 3D Workflow, Websi
 
 ## 1.1: Overview
 
-So you've probably deduced that the background is a Three.js scene. As of writing (April 14, 2026), it is held entirely within a 300 x 300 plane geometry, with the y vector being modified by my shader pipeline. On top of the plane geometry I have rendered 270,000 grass blades. Each blade of grass has 
-12 verts, and the entire terrain has 1,024 verts. The model is just to provide some visual center to the scene, and doesn't really mean anything. On each frame, 4 shader programs are ran: the grass' fragment and vertex shader, and the terrain's fragment and vertex shader. Small amounts of postprocessing is done using an SMAA pass.
+So you've probably deduced that the background is a Three.js scene. As of writing (April 14, 2026), it is held entirely within a 300 x 300 plane geometry, with the y vector being modified by my shader pipeline. On top of the plane geometry I have rendered 270,000 grass blades. Each blade of grass has 12 verts, and the entire terrain has 1,024 verts. The model is just to provide some visual center to the scene, and doesn't really mean anything. On each frame, 4 shader programs are ran: the grass' fragment and vertex shader, and the terrain's fragment and vertex shader. Small amounts of postprocessing is done using an SMAA pass.
 
 ## 1.2: Grass Construction
 

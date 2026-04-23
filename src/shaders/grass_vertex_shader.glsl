@@ -20,13 +20,6 @@ vec2 hash21(float src){
      uvec2 h=murmurHash21(floatBitsToUint(src));
      return uintBitsToFloat(h&0x007fffffu|0x3f800000u)-1.;
 }
-
-vec2 quickHash(float p){
-     vec2 r=vec2(
-          dot(vec2(p),vec2(17.32452,23.95782)),
-          dot(vec2(p),vec2(24.895781,38.8235)));
-          return fract(sin(r)*1742.245984);
-     }
      
 vec3 hash(vec3 p){
      p=vec3(
