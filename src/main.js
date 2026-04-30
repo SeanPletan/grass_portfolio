@@ -70,6 +70,33 @@ async function loadAllMarkdown() {
 
 
 
+function createScrollHelperText() {
+     const scrollHelper = document.createElement("h2");
+     scrollHelper.id = "scroll-helper"
+     scrollHelper.classList = "glass-card hide-scroll-helper";
+     scrollHelper.textContent = "scroll down to see page content..."
+     document.body.appendChild(scrollHelper);
+}
+
+function toggleScrollHelperText() {
+     const scrollHelper = document.getElementById("scroll-helper");
+     if (!scrollHelper) {
+          console.log("null scroll helper!");
+          return;
+     }
+
+     if (scrollHelper.classList.contains("show-scroll-helper")) {
+          console.log("toggled OFF!");
+          scrollHelper.classList.remove("show-scroll-helper");
+          scrollHelper.classList.add("hide-scroll-helper");
+     } else {
+          console.log("toggled ON!");
+          scrollHelper.classList.add("show-scroll-helper");
+          scrollHelper.classList.remove("hide-scroll-helper");
+     }
+}
+
+createScrollHelperText();
 
 
 function ensureScrolled() {
@@ -220,6 +247,11 @@ async function handleRouteChange() {
      spacer.className = "spacer"
      document.getElementById("overlay-content").appendChild(spacer);
      document.getElementById("overlay-content").scrollTop = 0;
+
+     if (appState.scrollValue < appState.threshold) {
+          console.log(appState.scrollValue)
+          window.setTimeout(toggleScrollHelperText, 3000)
+     }
 }
 
 
@@ -280,7 +312,6 @@ document.addEventListener("click", function (e) {
      if (icon.dataset.action === "minimize-maximize")
           handleOverlayStateMode(true);
 });
-
 
 
 

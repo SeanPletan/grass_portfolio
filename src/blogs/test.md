@@ -1,4 +1,4 @@
-# Test Project
+# Website To-Do List
 
 ### 'Markdown-it' 'Three.js' 'Javascript' 'HTML' 'CSS' 'VS Code'
 
@@ -8,12 +8,12 @@
 
 #### 'Embedded Systems' 'Automotive' 'Low Level Communications' 'Tag Example #4'
 
-published:March 19, 2026
-last edited:March 25, 2026
+published: March 19, 2026
+last edited: March 25, 2026
 
 subheading:This is a mockup picture made in figma. Previously, I wanted to use a monolith.
 
-summary:This is a simple little introduction to the simple little test project. Below this will be some sort of separator which the program will search for, and only render the text above it in the projects section. Below it will be rendered in the blog section. 
+summary: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla lorem diam, sodales non nulla in, posuere dictum tellus. Integer et turpis est. Duis ut felis hendrerit, efficitur est eget, aliquet justo. Donec sagittis consequat nibh, quis lacinia erat congue ut.
 
 <!--BLOG SECTION BELOW-->
 
@@ -23,8 +23,6 @@ Integer dignissim, tortor at laoreet dignissim, tortor odio euismod massa, at fa
 
 Vestibulum vel augue et ante rhoncus posuere nec et sem. Curabitur nec feugiat turpis. Donec nec condimentum elit, in sodales lectus. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut cursus luctus faucibus. Mauris massa felis, sodales at nulla sit amet, ultricies fermentum nunc. Donec aliquam vel mauris non sodales. Nam elementum nisi non sapien pharetra convallis. Vivamus nunc neque, vestibulum at condimentum at, viverra sollicitudin ex. Mauris cursus libero eget ligula sollicitudin, vitae ultricies diam varius. Donec dignissim turpis vitae augue venenatis sodales.
 
-# Hello
-
 Donec at tellus ut ligula scelerisque tincidunt. Morbi nec rhoncus ligula. Mauris at justo consectetur, interdum odio a, ullamcorper libero. In iaculis dictum nisi ac rutrum. Donec felis eros, laoreet et felis laoreet, porta bibendum quam. Suspendisse elit diam, lacinia sed magna ac, ultricies tincidunt ante. Duis odio turpis, porta ac tempor ac, egestas vel lorem. Nulla a consectetur lectus. Sed vel tempor neque. Quisque dapibus scelerisque venenatis. Integer dictum pharetra aliquam. Sed quis quam pulvinar, facilisis leo vestibulum, sollicitudin libero. Aenean eu ligula vehicula, fermentum justo quis, imperdiet ipsum. Donec tristique leo sed purus volutpat molestie. Nam non ligula id arcu venenatis vestibulum. Morbi pulvinar odio velit, ut mollis ipsum luctus non.
 
 Curabitur feugiat porta quam et tincidunt. Nunc ac risus sit amet neque scelerisque gravida in sit amet nibh. Ut viverra arcu ut sodales condimentum. Donec eget hendrerit purus. In tincidunt consequat elementum. Nam vitae ante nisl. Vivamus nec volutpat nulla.
@@ -33,6 +31,5 @@ TODO List:
 + Shrink overlay for contact me section to 270px?
 + Create a little nav bar that goes to "About Me", "Projects", "Blog", and "Contact Me" in the top left corner, visible only when in its expanded state in blog and projects
 + Remove the grass where the sculpture is
-+ Slowly orbit around the sculpture when scrolled is == 1
-     * If the camera is not on the predefined vector path
++ Slowly orbit around the sculpture when scrolled is == 1; If the camera is not on the predefined vector path.
 

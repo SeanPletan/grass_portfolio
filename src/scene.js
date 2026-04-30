@@ -228,6 +228,11 @@ export function startSceneTick(sceneCtx, appState, dom) {
                nav.classList.add("show-ui");
                name.classList.add("show-ui");
                appState.uiShown = true;
+               const scrollHelper = document.getElementById("scroll-helper");
+               if (scrollHelper) {
+                    scrollHelper.classList.remove("show-scroll-helper");
+                    scrollHelper.classList.add("hide-scroll-helper");
+               }
           }
           else if (appState.scrollValue > appState.threshold && appState.uiShown && appState.uiShownFullscreenOverruled) {
                //handles removing nav and name only when expanded. set by the long ass variable name
