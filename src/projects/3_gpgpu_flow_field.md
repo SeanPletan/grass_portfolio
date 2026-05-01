@@ -2,7 +2,7 @@
 
 ![A ship made out of millions of particles, computed with the GPU](/gpgpu_ship.jpg)
 
-## Links: https://github.com/SeanPletan https://ship-flow-field.vercel.app /blog/gpgpu_flow_field
+## Links: https://ship-flow-field.vercel.app /blog/gpgpu_flow_field
 
 published: January 17, 2025
 last edited: March 31, 2026

@@ -5,7 +5,7 @@
 published: November 29, 2024
 last edited: April 1, 2026          
 
-## Links: https://github.com/SeanPletan /blog/false_color
+## Links: https://github.com/SeanPletan/dips-4 /blog/false_color
 
 subheading: An image showing both the input image of pluto, and a color transformation postprocessing affect applied to it. The goal is to reveal information, which was achieved. Look at the atmosphere in light blue around the dwarf planet.
 

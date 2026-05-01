@@ -2,7 +2,7 @@
 
 ![A picture of the ND Miata's shift knob and center console](/miata_knob.jpg)
 
-## Links: https://github.com/SeanPletan /blog/shiftsense
+## Links: https://github.com/SeanPletan/shiftsense /blog/shiftsense
 
 published: December 9, 2025
 last edited: April 10, 2026
