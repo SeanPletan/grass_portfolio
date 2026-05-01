@@ -81,16 +81,13 @@ function createScrollHelperText() {
 function toggleScrollHelperText() {
      const scrollHelper = document.getElementById("scroll-helper");
      if (!scrollHelper) {
-          console.log("null scroll helper!");
           return;
      }
 
      if (scrollHelper.classList.contains("show-scroll-helper")) {
-          console.log("toggled OFF!");
           scrollHelper.classList.remove("show-scroll-helper");
           scrollHelper.classList.add("hide-scroll-helper");
      } else {
-          console.log("toggled ON!");
           scrollHelper.classList.add("show-scroll-helper");
           scrollHelper.classList.remove("hide-scroll-helper");
      }
@@ -178,7 +175,6 @@ async function handleRouteChange() {
                json.push(projectParsing.projectParser(all_md[projectBlog].default));
           }
           jsonLoaded = true;
-          console.log(json);
      }
 
 
@@ -271,7 +267,6 @@ async function handleRouteChange() {
      document.getElementById("overlay-content").scrollTop = 0;
 
      if (appState.scrollValue < appState.threshold) {
-          console.log(appState.scrollValue)
           window.setTimeout(toggleScrollHelperText, 3000)
      }
 }

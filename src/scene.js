@@ -259,7 +259,6 @@ export function startSceneTick(sceneCtx, appState, dom) {
           timer.reset();         // prevents huge time jump on resume
           timer.update();
           rafId = requestAnimationFrame(tick);
-          console.log("started loop");
      }
 
      function pauseLoop() {
