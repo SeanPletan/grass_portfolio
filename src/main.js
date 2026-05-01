@@ -200,6 +200,17 @@ async function handleRouteChange() {
           ensureScrolled();
           document.querySelectorAll(".route").forEach((link) => {
                link.addEventListener("click", function (e) {
+                    // Check if the link is external (not part of your SPA)
+                    const isExternal = this.hostname !== window.location.hostname;
+
+                    if (isExternal) {
+                         // Open external links in a new tab
+                         window.open(this.href, "_blank");
+                         e.preventDefault(); // Prevent SPA routing logic for external links
+                         return;
+                    }
+
+                    // For internal links, handle routing in your SPA
                     e.preventDefault();
                     history.pushState(null, "", this.href);
                     handleRouteChange();
@@ -218,6 +229,17 @@ async function handleRouteChange() {
 
           document.querySelectorAll(".route").forEach((link) => {
                link.addEventListener("click", function (e) {
+                    // Check if the link is external (not part of your SPA)
+                    const isExternal = this.hostname !== window.location.hostname;
+
+                    if (isExternal) {
+                         // Open external links in a new tab
+                         window.open(this.href, "_blank");
+                         e.preventDefault(); // Prevent SPA routing logic for external links
+                         return;
+                    }
+
+                    // For internal links, handle routing in your SPA
                     e.preventDefault();
                     history.pushState(null, "", this.href);
                     handleRouteChange();
@@ -284,6 +306,17 @@ window.addEventListener("popstate", handleRouteChange);
 
 document.querySelectorAll(".route").forEach((link) => {
      link.addEventListener("click", function (e) {
+          // Check if the link is external (not part of your SPA)
+          const isExternal = this.hostname !== window.location.hostname;
+
+          if (isExternal) {
+               // Open external links in a new tab
+               window.open(this.href, "_blank");
+               e.preventDefault(); // Prevent SPA routing logic for external links
+               return;
+          }
+
+          // For internal links, handle routing in your SPA
           e.preventDefault();
           history.pushState(null, "", this.href);
           handleRouteChange();
