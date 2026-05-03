@@ -160,7 +160,7 @@ void main(){
      
      vec3 grassBladeWorldPos=(modelMatrix*vec4(grassOffset,1.)).xyz;
      vec3 hashVal=hash(grassBladeWorldPos);
-     
+
      // Grass rotation
      const float PI=3.14159;
      float angle=remap(hashVal.x,-1.,1.,-PI,PI);
@@ -222,6 +222,13 @@ void main(){
      
      vec3 grassLocalPosition=grassMat*vec3(x,y,z)+grassOffset;
      vec3 grassLocalNormal=grassMat*vec3(0.,curveRot90*curveGrad.yz);
+
+     //GRASS ORIGIN MASK
+     /////////////////////////////////////////////////////////////////////////////////////////////////
+     /////////////////////////////////////////////////////////////////////////////////////////////////
+     float dist=length(grassBladeWorldPos.xz);
+     float mask=smoothstep(14.0,15.0,dist);// 0 inside, 1 outside
+     vec3 maskedPosition=mix(grassOffset,grassLocalPosition,mask);
      
      //Blend normal
      float distanceBlend=smoothstep(0.,1.,distance(cameraPosition,grassBladeWorldPos));
@@ -229,7 +236,7 @@ void main(){
      grassLocalNormal=normalize(grassLocalNormal);
      
      // Viewspace thicken
-     vec4 mvPosition=modelViewMatrix*vec4(grassLocalPosition,1.);
+     vec4 mvPosition=modelViewMatrix*vec4(maskedPosition,1.);
      
      vec3 viewDir=normalize(cameraPosition-grassBladeWorldPos);
      vec3 grassFaceNormal=(grassMat*vec3(0.,0.,-zSide));

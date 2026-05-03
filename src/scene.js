@@ -132,7 +132,7 @@ export function makeScene() {
                statue.traverse((child) => {
                     if (child.isMesh) {
                          child.material = matcapMaterial;
-                         child.position.set(0, -30, 0);
+                         child.position.set(-3, -30, -3);
                          child.rotation.y = 4;
                          child.scale.set(3, 3, 3);
                     }
@@ -148,7 +148,10 @@ export function makeScene() {
      }
      loadStatue(scene);
 
-
+     // //make Origin Marker
+     // const cubeGeo = new THREE.BoxGeometry(1, 100, 1);
+     // const cube = new THREE.Mesh(cubeGeo, matcapMaterial)
+     // scene.add(cube);
 
      const camera = new THREE.PerspectiveCamera(80, screenSizes.width / screenSizes.height, 0.1, 750);
      camera.position.set(70, 10, -310);
@@ -214,9 +217,9 @@ export function startSceneTick(sceneCtx, appState, dom) {
           grassUniforms.time.value = elapsedTime;
 
           camera.fov = lerp(80, 100, appState.scrollValue);
-          camera.position.z = lerp(-310, -30, appState.scrollValue);
+          camera.position.z = lerp(-310, -33, appState.scrollValue);
           camera.position.y = lerp(-5, 5, appState.scrollValue);
-          camera.position.x = lerp(0, -30, appState.scrollValue);
+          camera.position.x = lerp(0, -33, appState.scrollValue);
           camera.rotation.y = lerp(0, Math.PI * -0.2, appState.scrollValue);
           camera.updateProjectionMatrix();
 
