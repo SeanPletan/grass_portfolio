@@ -3,6 +3,10 @@
      src: url(/Comfortaa-Regular.ttf);
 }
 
+html, body {
+     overflow: hidden;
+}
+
 * {
      font-family: 'Inter', sans-serif;
      margin: 0;
@@ -124,9 +128,9 @@ pre {
 }
 
 #overlay {
-     position: fixed;
+     position: absolute;
      height: calc(100vh - 2px); /*border width*/
-     right: 0vw;
+     
      color: rgb(0, 0, 0);
      overflow: hidden;
      border-top-right-radius: 0;
@@ -147,12 +151,14 @@ pre {
 
 .overlay--hidden {
      width: 40vw;
-     opacity: 0;
+     right: -40vw;
+     content: "";
 }
 
 .overlay--panel {
      width: 40vw;
           border-radius: 20px;
+          right: 0vw;
 }
 
 .overlay--expanded {

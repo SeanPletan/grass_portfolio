@@ -80,7 +80,7 @@ function createScrollHelperText() {
 
 function toggleScrollHelperText() {
      const scrollHelper = document.getElementById("scroll-helper");
-     if (!scrollHelper) {
+     if (!scrollHelper || appState.scrollValue > appState.threshold) {
           return;
      }
 
