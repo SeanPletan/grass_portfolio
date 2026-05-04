@@ -11,7 +11,6 @@ export function findBlogContent(path, json) {
 export function renderBlogPage(jsonObject) {
      const blog = document.createElement('div');
      blog.id = "blog";
-     // blog.className = "blog--panel"; //bad
 
      const blogHeading = document.createElement('div');
      blogHeading.id = "blog-heading";
@@ -170,58 +169,52 @@ function createLinkIcons(urls) {
 }
 
 
-export function renderBlogCard(jsonObject) {
-     const container = document.getElementById('blog-container');
-     if (!container) return;
+// export function renderBlogCard(jsonObject) {
+//      const container = document.getElementById('blog-container');
+//      if (!container) return;
 
-     const cardAndLineContainer = document.createElement('div');
-     cardAndLineContainer.className = "card-and-line-container";
-
-
-     const blogCard = document.createElement('a');
-     blogCard.className = "blog-card route"
-     for (let xx = 0; xx < jsonObject.links.length; xx++)
-     {
-          if (jsonObject.links[xx].includes("/blog"))
-               blogCard.href = jsonObject.links[xx];
-     }
+//      const cardAndLineContainer = document.createElement('div');
+//      cardAndLineContainer.className = "card-and-line-container";
 
 
-     const blogCardText = document.createElement('div');
-     blogCardText.className = "blog-card-text";
-
-     const blogCardTitle = document.createElement('h2');
-     blogCardTitle.className = 'blog-card-title';
-     blogCardTitle.innerText = jsonObject.title;
-
-     const blogCardImg = document.createElement('img');
-     blogCardImg.className = 'blog-card-img';
-     blogCardImg.src = jsonObject.imageSrc;
-     blogCardImg.alt = jsonObject.imageTitle;
-
-     const blogCardSummary = document.createElement('p');
-     blogCardSummary.className = 'blog-card-summary';
-     blogCardSummary.innerText = jsonObject.summary;
-
-     blogCardText.appendChild(blogCardTitle);
-     blogCardText.appendChild(blogCardSummary);
-
-     blogCard.appendChild(blogCardText);
-     blogCard.appendChild(blogCardImg);
-
-     cardAndLineContainer.appendChild(blogCard);
+//      const blogCard = document.createElement('a');
+//      blogCard.className = "blog-card route"
+//      for (let xx = 0; xx < jsonObject.links.length; xx++)
+//      {
+//           if (jsonObject.links[xx].includes("/blog"))
+//                blogCard.href = jsonObject.links[xx];
+//      }
 
 
-     const horizontalLine = document.createElement('div');
-     horizontalLine.className = "horizontal-line";
-     cardAndLineContainer.appendChild(horizontalLine);
+//      const blogCardText = document.createElement('div');
+//      blogCardText.className = "blog-card-text";
 
-     container.appendChild(cardAndLineContainer);
+//      const blogCardTitle = document.createElement('h2');
+//      blogCardTitle.className = 'blog-card-title';
+//      blogCardTitle.innerText = jsonObject.title;
 
-}
+//      const blogCardImg = document.createElement('img');
+//      blogCardImg.className = 'blog-card-img';
+//      blogCardImg.src = jsonObject.imageSrc;
+//      blogCardImg.alt = jsonObject.imageTitle;
+
+//      const blogCardSummary = document.createElement('p');
+//      blogCardSummary.className = 'blog-card-summary';
+//      blogCardSummary.innerText = jsonObject.summary;
+
+//      blogCardText.appendChild(blogCardTitle);
+//      blogCardText.appendChild(blogCardSummary);
+
+//      blogCard.appendChild(blogCardText);
+//      blogCard.appendChild(blogCardImg);
+
+//      cardAndLineContainer.appendChild(blogCard);
 
 
-export function filterBlogCards(arrayOfJsonObjects) {
-     return 0;
+//      const horizontalLine = document.createElement('div');
+//      horizontalLine.className = "horizontal-line";
+//      cardAndLineContainer.appendChild(horizontalLine);
 
-}
+//      container.appendChild(cardAndLineContainer);
+
+// }

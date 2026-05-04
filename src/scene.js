@@ -94,7 +94,7 @@ export function makeScene() {
 
      //Make sky
      const hdrLoader = new HDRLoader();
-     hdrLoader.loadAsync("/puresky.hdr").then((envMap) => {
+     hdrLoader.loadAsync("/puresky2.hdr").then((envMap) => {
           envMap.mapping = THREE.EquirectangularReflectionMapping;
           scene.background = envMap;
           scene.backgroundRotation.y += Math.PI * 1.125;

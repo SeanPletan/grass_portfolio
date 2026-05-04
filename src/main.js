@@ -6,7 +6,7 @@ import getAboutMePage from "./routes/about.md?raw";
 import getProjectsPage from "./routes/projects.md?raw";
 import getContactPage from "./routes/contact.md?raw";
 import get404Page from "./routes/404.md?raw";
-import getBlogPage from "./routes/blog.md?raw";
+// import getBlogPage from "./routes/blog.md?raw";
 
 
 if (window.innerWidth <= 768) {
