@@ -2,7 +2,7 @@
 
 <div style="float: right; width: 200px; margin: 0 20px 20px 20px">
      <div style="width: 200px; height: 200px; border-radius: 50%; overflow: hidden;">
-          <img src="/20260313_134402.jpg" style="width: 100%; height: 100%; object-fit: cover;" />
+          <img loading="lazy" src="/20260313_134402.jpg" style="width: 100%; height: 100%; object-fit: cover;" />
      </div>
 </div>
 
