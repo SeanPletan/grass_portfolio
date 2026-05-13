@@ -5,16 +5,29 @@ import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { SMAAPass } from "three/examples/jsm/postprocessing/SMAAPass.js";
 import { Cache } from "three";
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import Stats from 'stats.js';
 import fshGrassText from "./shaders/grass_fragment_shader.glsl?raw";
 import vshGrassText from "./shaders/grass_vertex_shader.glsl?raw";
 import fshGroundText from "./shaders/ground_fragment_shader.glsl?raw";
 import vshGroundText from "./shaders/ground_vertex_shader.glsl?raw";
+
+
+
+// TODO
+// 1. DRACO compression for statue
+// 2. do NOT do import * as THREE from "three". Only load what you need. Tree-shaking with vite? idk
+// 3. use a lower-res terrain texture.       .webp
+// 4.
 
 function lerp(a, b, t) {
      return a + (b - a) * t;
 }
 
 export function makeScene() {
+
+     const stats = new Stats();
+     document.body.appendChild(stats.dom);
 
      const canvas = document.querySelector("canvas.webgl");
      const scene = new THREE.Scene();
@@ -26,13 +39,19 @@ export function makeScene() {
      renderer.setSize(screenSizes.width, screenSizes.height);
      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
      Cache.enabled = true;
-     scene.background = new THREE.Color(0x9095cc)
+     scene.background = new THREE.Color(0x9095cc);
 
-     const GRASS_SEGMENTS = 5;
-     const GRASS_PATCH_SIZE = 300;
+
+
+     const GRASS_SEGMENTS = 4;
+     const GRASS_PATCH_SIZE = 30;
      const GRASS_WIDTH = 0.75;
      const GRASS_HEIGHT = 4.5;
-     const NUM_GRASS = GRASS_PATCH_SIZE * GRASS_PATCH_SIZE * 3.0;
+     const NUM_GRASS = GRASS_PATCH_SIZE * GRASS_PATCH_SIZE * 10.0;
+     const NUM_PATCHES = 10;
+     const TOTAL_SIZE = GRASS_PATCH_SIZE * NUM_PATCHES * 2; //600
+
+     console.log(NUM_PATCHES, TOTAL_SIZE)
 
      function createGeometry(segments) {
           const VERTICES = (segments + 1) * 2;
@@ -83,8 +102,8 @@ export function makeScene() {
           fragmentShader: fshGroundText,
      });
      const groundGeometry = new THREE.PlaneGeometry(
-          GRASS_PATCH_SIZE * 2,
-          GRASS_PATCH_SIZE * 2,
+          TOTAL_SIZE,
+          TOTAL_SIZE,
           32,
           32,
      );
@@ -189,18 +208,23 @@ export function makeScene() {
 
      window.addEventListener("resize", onResize);
 
+     const controls = new OrbitControls(camera, renderer.domElement);
+
+
      return {
           camera,
           composer,
           grassUniforms,
-          statueParts
+          statueParts,
+          controls,
+          stats
      };
 
 }  
 
 
 export function startSceneTick(sceneCtx, appState, dom) {
-     const { camera, composer, grassUniforms, statueParts } = sceneCtx;
+     const { camera, composer, grassUniforms, statueParts, controls, stats } = sceneCtx;
      const { nav, name } = dom;
      const timer = new THREE.Timer();
      let rafId = null;
@@ -216,11 +240,12 @@ export function startSceneTick(sceneCtx, appState, dom) {
 
           grassUniforms.time.value = elapsedTime;
 
-          camera.fov = lerp(80, 100, appState.scrollValue);
-          camera.position.z = lerp(-310, -33, appState.scrollValue);
-          camera.position.y = lerp(-5, 5, appState.scrollValue);
-          camera.position.x = lerp(0, -33, appState.scrollValue);
-          camera.rotation.y = lerp(0, Math.PI * -0.2, appState.scrollValue);
+          // camera.fov = lerp(80, 100, appState.scrollValue);
+          // camera.position.z = lerp(-310, -33, appState.scrollValue);
+          // camera.position.y = lerp(-5, 5, appState.scrollValue);
+          // camera.position.x = lerp(0, -33, appState.scrollValue);
+          // camera.rotation.y = lerp(0, Math.PI * -0.2, appState.scrollValue);
+          controls.update();
           camera.updateProjectionMatrix();
 
           for (let i = 0; i < statueParts.length; i++)
@@ -252,7 +277,9 @@ export function startSceneTick(sceneCtx, appState, dom) {
                document.getElementById("overlay").classList.add("overlay--hidden");
                appState.uiShown = false;
           }
+          stats.begin();
           composer.render();
+          stats.end();
           rafId = requestAnimationFrame(tick);
      };
 
