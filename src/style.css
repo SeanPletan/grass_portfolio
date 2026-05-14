@@ -1,6 +1,7 @@
 @font-face {
      font-family: 'Comfortaa';
      src: url(/Comfortaa-Regular.ttf);
+     font-display: swap;
 }
 
 html, body {

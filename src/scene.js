@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import { Scene, WebGLRenderer, Color, InstancedBufferGeometry, Sphere, Vector3, TextureLoader, RepeatWrapping, ShaderMaterial, PlaneGeometry, Mesh, EquirectangularReflectionMapping, Vector4, FrontSide, MeshMatcapMaterial, PerspectiveCamera, Timer } from "three";
 import { HDRLoader } from "three/addons/loaders/HDRLoader.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
@@ -30,8 +30,8 @@ export function makeScene() {
      document.body.appendChild(stats.dom);
 
      const canvas = document.querySelector("canvas.webgl");
-     const scene = new THREE.Scene();
-     const renderer = new THREE.WebGLRenderer({ canvas: canvas });
+     const scene = new Scene();
+     const renderer = new WebGLRenderer({ canvas: canvas });
      const screenSizes = {
           width: window.innerWidth,
           height: window.innerHeight,
@@ -39,7 +39,7 @@ export function makeScene() {
      renderer.setSize(screenSizes.width, screenSizes.height);
      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
      Cache.enabled = true;
-     scene.background = new THREE.Color(0x9095cc);
+     scene.background = new Color(0x9095cc);
 
 
 
@@ -77,11 +77,11 @@ export function makeScene() {
                indeces[i * 12 + 11] = fi + 2;
           }
 
-          const geometry = new THREE.InstancedBufferGeometry();
+          const geometry = new InstancedBufferGeometry();
           geometry.instanceCount = NUM_GRASS;
           geometry.setIndex(indeces);
-          geometry.boundingSphere = new THREE.Sphere(
-               new THREE.Vector3(0, 0, 0),
+          geometry.boundingSphere = new Sphere(
+               new Vector3(0, 0, 0),
                1 + GRASS_PATCH_SIZE * 2,
           );
 
@@ -89,10 +89,10 @@ export function makeScene() {
      }
 
      //Make ground
-     const terrainDiffuse = new THREE.TextureLoader().load("/terrainTexture/Terrain_Texture_BaseColor.png");
-     terrainDiffuse.wrapS = THREE.RepeatWrapping;
-     terrainDiffuse.wrapT = THREE.RepeatWrapping;
-     const groundMaterial = new THREE.ShaderMaterial({
+     const terrainDiffuse = new TextureLoader().load("/terrainTexture/Terrain_Texture_BaseColor.png");
+     terrainDiffuse.wrapS = RepeatWrapping;
+     terrainDiffuse.wrapT = RepeatWrapping;
+     const groundMaterial = new ShaderMaterial({
           uniforms:
           {
                uTerrainTexture: { value: terrainDiffuse },
@@ -101,44 +101,44 @@ export function makeScene() {
           vertexShader: vshGroundText,
           fragmentShader: fshGroundText,
      });
-     const groundGeometry = new THREE.PlaneGeometry(
+     const groundGeometry = new PlaneGeometry(
           TOTAL_SIZE,
           TOTAL_SIZE,
           32,
           32,
      );
-     const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+     const ground = new Mesh(groundGeometry, groundMaterial);
      ground.rotateX(-Math.PI / 2);
      scene.add(ground);
 
      //Make sky
      const hdrLoader = new HDRLoader();
      hdrLoader.loadAsync("/puresky2.hdr").then((envMap) => {
-          envMap.mapping = THREE.EquirectangularReflectionMapping;
+          envMap.mapping = EquirectangularReflectionMapping;
           scene.background = envMap;
           scene.backgroundRotation.y += Math.PI * 1.125;
      });
 
      //Make grass
      const grassUniforms = {
-          grassParams: { value: new THREE.Vector4(GRASS_SEGMENTS, GRASS_PATCH_SIZE, GRASS_WIDTH, GRASS_HEIGHT) },
+          grassParams: { value: new Vector4(GRASS_SEGMENTS, GRASS_PATCH_SIZE, GRASS_WIDTH, GRASS_HEIGHT) },
           time: { value: 0 }
      };
-     const grassMaterial = new THREE.ShaderMaterial({
+     const grassMaterial = new ShaderMaterial({
           uniforms: grassUniforms,
           vertexShader: vshGrassText,
           fragmentShader: fshGrassText,
-          side: THREE.FrontSide,
+          side: FrontSide,
      });
      const grassGeometry = createGeometry(GRASS_SEGMENTS);
-     const grass = new THREE.Mesh(grassGeometry, grassMaterial);
+     const grass = new Mesh(grassGeometry, grassMaterial);
      scene.add(grass);
 
      //Make statue
      const randInt = Math.floor(Math.random() * 6.0) + 1.0; //random matcap material on DOM load, change 6.0 to the number of matcap files you have [1,x]
      const gltfLoader = new GLTFLoader();
-     const matcapTexture = new THREE.TextureLoader().load(`/matcap${randInt}.png`);
-     const matcapMaterial = new THREE.MeshMatcapMaterial({
+     const matcapTexture = new TextureLoader().load(`/matcap${randInt}.png`);
+     const matcapMaterial = new MeshMatcapMaterial({
           matcap: matcapTexture
      });
      let statueParts = [];
@@ -172,7 +172,7 @@ export function makeScene() {
      // const cube = new THREE.Mesh(cubeGeo, matcapMaterial)
      // scene.add(cube);
 
-     const camera = new THREE.PerspectiveCamera(80, screenSizes.width / screenSizes.height, 0.1, 750);
+     const camera = new PerspectiveCamera(80, screenSizes.width / screenSizes.height, 0.1, 750);
      camera.position.set(70, 10, -310);
      camera.lookAt(0, 0, 0);
      scene.add(camera);
@@ -226,7 +226,7 @@ export function makeScene() {
 export function startSceneTick(sceneCtx, appState, dom) {
      const { camera, composer, grassUniforms, statueParts, controls, stats } = sceneCtx;
      const { nav, name } = dom;
-     const timer = new THREE.Timer();
+     const timer = new Timer();
      let rafId = null;
      let running = false;
      timer.connect(document);
