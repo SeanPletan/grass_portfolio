@@ -16,7 +16,7 @@ import vshGroundText from "./shaders/ground_vertex_shader.glsl?raw";
 
 // TODO
 // 1. DRACO compression for statue
-// 2. do NOT do import * as THREE from "three". Only load what you need. Tree-shaking with vite? idk
+// 2. DONE------------------------------------                                  do NOT do import * as THREE from "three". Only load what you need. Tree-shaking with vite? idk
 // 3. use a lower-res terrain texture.       .webp
 // 4.
 
@@ -89,7 +89,7 @@ export function makeScene() {
      }
 
      //Make ground
-     const terrainDiffuse = new TextureLoader().load("/terrainTexture/Terrain_Texture_BaseColor.png");
+     const terrainDiffuse = new TextureLoader().load("/terrainTexture/Terrain_Texture_BaseColor.webp"); //converted from png to webp: 567kB to 49kB
      terrainDiffuse.wrapS = RepeatWrapping;
      terrainDiffuse.wrapT = RepeatWrapping;
      const groundMaterial = new ShaderMaterial({
@@ -137,7 +137,7 @@ export function makeScene() {
      //Make statue
      const randInt = Math.floor(Math.random() * 6.0) + 1.0; //random matcap material on DOM load, change 6.0 to the number of matcap files you have [1,x]
      const gltfLoader = new GLTFLoader();
-     const matcapTexture = new TextureLoader().load(`/matcap${randInt}.png`);
+     const matcapTexture = new TextureLoader().load(`/matcap${randInt}.webp`);
      const matcapMaterial = new MeshMatcapMaterial({
           matcap: matcapTexture
      });
