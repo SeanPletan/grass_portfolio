@@ -1,4 +1,4 @@
-import { Scene, WebGLRenderer, Color, InstancedBufferGeometry, Sphere, Vector3, TextureLoader, RepeatWrapping, ShaderMaterial, PlaneGeometry, Mesh, EquirectangularReflectionMapping, Vector4, FrontSide, MeshMatcapMaterial, PerspectiveCamera, Timer } from "three";
+import { Scene, WebGLRenderer, Color, InstancedBufferGeometry, Sphere, Vector3, TextureLoader, RepeatWrapping, ShaderMaterial, PlaneGeometry, Mesh, EquirectangularReflectionMapping, Vector4, FrontSide, MeshMatcapMaterial, PerspectiveCamera, Timer, SRGBColorSpace } from "three";
 import { HDRLoader } from "three/addons/loaders/HDRLoader.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
@@ -6,19 +6,35 @@ import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { SMAAPass } from "three/examples/jsm/postprocessing/SMAAPass.js";
 import { Cache } from "three";
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
 import Stats from 'stats.js';
 import fshGrassText from "./shaders/grass_fragment_shader.glsl?raw";
 import vshGrassText from "./shaders/grass_vertex_shader.glsl?raw";
 import fshGroundText from "./shaders/ground_fragment_shader.glsl?raw";
 import vshGroundText from "./shaders/ground_vertex_shader.glsl?raw";
 
+//REMOVE BOXGEOMERY IMPORT ON PROD BUILD!!
 
 
-// TODO
-// 1. DRACO compression for statue
-// 2. DONE------------------------------------                                  do NOT do import * as THREE from "three". Only load what you need. Tree-shaking with vite? idk
-// 3. use a lower-res terrain texture.       .webp
-// 4.
+/* 
+There is a way to unlock Chrome frame rate regardless of the screen capabilities.
+
+That will enable frame rate monitoring even on good computers. For example, if you are developing on a good computer and you see 60fps, you might think it's okay. But maybe your website can only run at 70~80fps on that good computer, but the frame rate will drop below 60fps on other computers, and you won't know it.
+
+If you unlock the frame rate limit, you'll see that the performances aren't good enough, and you should run at something like 150~200fps on this computer to be safe.
+
+To unlock Chrome framerate:
+
+Close it completely —write the following instructions somewhere else if you are looking at this lesson on Chrome.
+Open the terminal.
+Open the following Github gist and launch the right command —Mac or Windows: https://gist.github.com/brunosimon/c15e7451a802fa8e34c0678620022f7d
+Chrome should open without the frame rate limit. You can test it on with the exercise by opening the FPS meter again. If it didn't work, close it and retry. If it still doesn't work, you'll have to do without it.
+
+//google-chrome --args --disable-gpu-vsync --disable-frame-rate-limit
+
+Be careful; doing this will draw much more power from your computer and might result on Chrome crashing.
+
+*/
 
 function lerp(a, b, t) {
      return a + (b - a) * t;
@@ -31,7 +47,7 @@ export function makeScene() {
 
      const canvas = document.querySelector("canvas.webgl");
      const scene = new Scene();
-     const renderer = new WebGLRenderer({ canvas: canvas });
+     const renderer = new WebGLRenderer({ canvas: canvas, powerPreference: 'high-performance' });
      const screenSizes = {
           width: window.innerWidth,
           height: window.innerHeight,
@@ -44,14 +60,13 @@ export function makeScene() {
 
 
      const GRASS_SEGMENTS = 4;
-     const GRASS_PATCH_SIZE = 30;
+     const GRASS_PATCH_SIZE = 20;
      const GRASS_WIDTH = 0.75;
      const GRASS_HEIGHT = 4.5;
-     const NUM_GRASS = GRASS_PATCH_SIZE * GRASS_PATCH_SIZE * 10.0;
+     const NUM_GRASS = GRASS_PATCH_SIZE * GRASS_PATCH_SIZE * 5.0;
      const NUM_PATCHES = 10;
      const TOTAL_SIZE = GRASS_PATCH_SIZE * NUM_PATCHES * 2; //600
 
-     console.log(NUM_PATCHES, TOTAL_SIZE)
 
      function createGeometry(segments) {
           const VERTICES = (segments + 1) * 2;
@@ -104,25 +119,34 @@ export function makeScene() {
      const groundGeometry = new PlaneGeometry(
           TOTAL_SIZE,
           TOTAL_SIZE,
-          32,
-          32,
+          128,
+          128,
      );
      const ground = new Mesh(groundGeometry, groundMaterial);
      ground.rotateX(-Math.PI / 2);
      scene.add(ground);
 
      //Make sky
-     const hdrLoader = new HDRLoader();
-     hdrLoader.loadAsync("/puresky2.hdr").then((envMap) => {
-          envMap.mapping = EquirectangularReflectionMapping;
-          scene.background = envMap;
-          scene.backgroundRotation.y += Math.PI * 1.125;
-     });
+     // const hdrLoader = new HDRLoader();
+     // hdrLoader.loadAsync("/puresky2.hdr").then((envMap) => {
+     //      envMap.mapping = EquirectangularReflectionMapping;
+     //      scene.background = envMap;
+     //      scene.backgroundRotation.y += Math.PI * 1.125;
+     // });
+          const skyLoader = new TextureLoader();
+          const sky = skyLoader.load('puresky.webp', () => {
+               sky.mapping = EquirectangularReflectionMapping;
+               sky.colorSpace = SRGBColorSpace;
+               scene.background = sky;
+               scene.backgroundRotation.y += Math.PI * 1.125;
+     })
 
      //Make grass
      const grassUniforms = {
           grassParams: { value: new Vector4(GRASS_SEGMENTS, GRASS_PATCH_SIZE, GRASS_WIDTH, GRASS_HEIGHT) },
-          time: { value: 0 }
+          time: { value: 0 },
+          i: { value: 0 },
+          j: { value: 0 }
      };
      const grassMaterial = new ShaderMaterial({
           uniforms: grassUniforms,
@@ -131,45 +155,54 @@ export function makeScene() {
           side: FrontSide,
      });
      const grassGeometry = createGeometry(GRASS_SEGMENTS);
-     const grass = new Mesh(grassGeometry, grassMaterial);
-     scene.add(grass);
-
-     //Make statue
-     const randInt = Math.floor(Math.random() * 6.0) + 1.0; //random matcap material on DOM load, change 6.0 to the number of matcap files you have [1,x]
-     const gltfLoader = new GLTFLoader();
-     const matcapTexture = new TextureLoader().load(`/matcap${randInt}.webp`);
-     const matcapMaterial = new MeshMatcapMaterial({
-          matcap: matcapTexture
-     });
-     let statueParts = [];
-
-     async function loadStatue(scene) {
-          try {
-               const gltf = await gltfLoader.loadAsync('/bust_separated.glb');
-               const statue = gltf.scene;
-
-               statue.traverse((child) => {
-                    if (child.isMesh) {
-                         child.material = matcapMaterial;
-                         child.position.set(-3, -30, -3);
-                         child.rotation.y = 4;
-                         child.scale.set(3, 3, 3);
-                    }
-
-               });
-               statueParts.push(...statue.children);
-               scene.add(statue);
-               return statue;
-
-          } catch (error) {
-               console.error('Error loading GLTF:', error);
+     let counter = 0;
+     for (let i = -(NUM_PATCHES / 2); i < (NUM_PATCHES / 2); i++) {
+          for (let j = -(NUM_PATCHES / 2); j < (NUM_PATCHES / 2); j++) {
+               grassUniforms.grassParams.value.y = Math.abs(Math.random()*10);
+               grassUniforms.i.value = i;
+               grassUniforms.j.value = j;
+               const grass = new Mesh(grassGeometry, grassMaterial);
+               scene.add(grass);
+               grass.position.setX((GRASS_PATCH_SIZE * i * 2) + GRASS_PATCH_SIZE);
+               grass.position.setZ((GRASS_PATCH_SIZE * j * 2) + GRASS_PATCH_SIZE);
+               grass.name = `grass(${i},${j})`;
           }
      }
-     loadStatue(scene);
 
-     // //make Origin Marker
-     // const cubeGeo = new THREE.BoxGeometry(1, 100, 1);
-     // const cube = new THREE.Mesh(cubeGeo, matcapMaterial)
+     // Make statue
+     const dracoLoader = new DRACOLoader();
+     dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.4.1/'); //recommended by google, as more users will have this in their cache
+
+     const randInt = Math.floor(Math.random() * 6) + 1; // random matcap
+     const matcapTexture = new TextureLoader().load(`/matcap${randInt}.webp`);
+     const matcapMaterial = new MeshMatcapMaterial({ matcap: matcapTexture });
+
+     let statueParts = [];
+
+     async function loadDRCStatue(scene) {
+          for (let i = 1; i < 10; i++)
+          {
+               // Decode the DRACO geometry and make a mesh.
+               const geometry = await dracoLoader.loadAsync(`bust/bust_00${i}.drc`);
+               const statueMesh = new Mesh(geometry, matcapMaterial);
+
+
+               // Transform mesh
+               statueMesh.position.set(-3, -30, -3);
+               statueMesh.rotation.y = 4;
+               //statueMesh.name = `bust_00${i}`;
+
+               // Add to scene and track parts
+               statueParts.push(statueMesh);
+               scene.add(statueMesh);
+          }
+     }
+
+     loadDRCStatue(scene);
+
+     //make Origin Marker
+     // const cubeGeo = new BoxGeometry(1, 100, 1);
+     // const cube = new Mesh(cubeGeo, matcapMaterial)
      // scene.add(cube);
 
      const camera = new PerspectiveCamera(80, screenSizes.width / screenSizes.height, 0.1, 750);
@@ -208,7 +241,7 @@ export function makeScene() {
 
      window.addEventListener("resize", onResize);
 
-     const controls = new OrbitControls(camera, renderer.domElement);
+     const controls = null;//new OrbitControls(camera, renderer.domElement);
 
 
      return {
@@ -240,16 +273,16 @@ export function startSceneTick(sceneCtx, appState, dom) {
 
           grassUniforms.time.value = elapsedTime;
 
-          // camera.fov = lerp(80, 100, appState.scrollValue);
-          // camera.position.z = lerp(-310, -33, appState.scrollValue);
-          // camera.position.y = lerp(-5, 5, appState.scrollValue);
-          // camera.position.x = lerp(0, -33, appState.scrollValue);
-          // camera.rotation.y = lerp(0, Math.PI * -0.2, appState.scrollValue);
-          controls.update();
+          camera.fov = lerp(80, 100, appState.scrollValue);
+          camera.position.z = lerp(-310, -33, appState.scrollValue);
+          camera.position.y = lerp(-5, 5, appState.scrollValue);
+          camera.position.x = lerp(0, -33, appState.scrollValue);
+          camera.rotation.y = lerp(0, Math.PI * -0.2, appState.scrollValue);
+          //controls.update();
           camera.updateProjectionMatrix();
 
           for (let i = 0; i < statueParts.length; i++)
-               statueParts[i].position.y = -33 + (i * (Math.cos(statueTimer) + 0.95) * 1.5);
+               statueParts[i].position.y = -33 + (i * (Math.sin(statueTimer) + 0.95) * 1.5);
 
           // UI trigger logic
           if (appState.scrollValue > appState.threshold && !appState.uiShown && !appState.uiShownFullscreenOverruled) {

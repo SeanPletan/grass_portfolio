@@ -212,35 +212,35 @@ async function handleRouteChange() {
                     handleRouteChange();
                });
           });
-     } else if (path === "/blog") {
-          view = md.render(getBlogPage); // Handle /blog exactly
-          document.getElementById("overlay-content").innerHTML = view;
-          for (let xxx of json) {
-               if (xxx.blog)
-                    blogParsing.renderBlogCard(xxx)
-          }
+     // } else if (path === "/blog") {
+     //      view = md.render(getBlogPage); // Handle /blog exactly
+     //      document.getElementById("overlay-content").innerHTML = view;
+     //      for (let xxx of json) {
+     //           if (xxx.blog)
+     //                blogParsing.renderBlogCard(xxx)
+     //      }
 
 
-          ensureScrolled();
+     //      ensureScrolled();
 
-          document.querySelectorAll(".route").forEach((link) => {
-               link.addEventListener("click", function (e) {
-                    // Check if the link is external (not part of your SPA)
-                    const isExternal = this.hostname !== window.location.hostname;
+     //      document.querySelectorAll(".route").forEach((link) => {
+     //           link.addEventListener("click", function (e) {
+     //                // Check if the link is external (not part of your SPA)
+     //                const isExternal = this.hostname !== window.location.hostname;
 
-                    if (isExternal) {
-                         // Open external links in a new tab
-                         window.open(this.href, "_blank");
-                         e.preventDefault(); // Prevent SPA routing logic for external links
-                         return;
-                    }
+     //                if (isExternal) {
+     //                     // Open external links in a new tab
+     //                     window.open(this.href, "_blank");
+     //                     e.preventDefault(); // Prevent SPA routing logic for external links
+     //                     return;
+     //                }
 
-                    // For internal links, handle routing in your SPA
-                    e.preventDefault();
-                    history.pushState(null, "", this.href);
-                    handleRouteChange();
-               });
-          });
+     //                // For internal links, handle routing in your SPA
+     //                e.preventDefault();
+     //                history.pushState(null, "", this.href);
+     //                handleRouteChange();
+     //           });
+     //      });
      } else if (path.startsWith("/blog")) {
           const blogObject = blogParsing.findBlogContent(path, json);
           const blogBody = md.render(blogObject.blog);
