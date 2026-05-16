@@ -1,4 +1,4 @@
-import { Scene, WebGLRenderer, Color, InstancedBufferGeometry, Sphere, Vector3, TextureLoader, RepeatWrapping, ShaderMaterial, PlaneGeometry, Mesh, EquirectangularReflectionMapping, Vector4, FrontSide, MeshMatcapMaterial, PerspectiveCamera, Timer, SRGBColorSpace } from "three";
+import { Scene, WebGLRenderer, Color, InstancedBufferGeometry, InstancedBufferAttribute, Sphere, Vector3, TextureLoader, RepeatWrapping, ShaderMaterial, PlaneGeometry, Mesh, EquirectangularReflectionMapping, Vector4, FrontSide, MeshMatcapMaterial, PerspectiveCamera, Timer, SRGBColorSpace } from "three";
 import { HDRLoader } from "three/addons/loaders/HDRLoader.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
@@ -13,26 +13,20 @@ import vshGrassText from "./shaders/grass_vertex_shader.glsl?raw";
 import fshGroundText from "./shaders/ground_fragment_shader.glsl?raw";
 import vshGroundText from "./shaders/ground_vertex_shader.glsl?raw";
 
-//REMOVE BOXGEOMERY IMPORT ON PROD BUILD!!
+
+//TODO
+
+//1. Photoshop the .webp to have blown out whites + bloom (think black hole sun music video). You can download the 8K .jpg from HDRIHaven. Kloofendall48d
+
+
+
 
 
 /* 
-There is a way to unlock Chrome frame rate regardless of the screen capabilities.
-
-That will enable frame rate monitoring even on good computers. For example, if you are developing on a good computer and you see 60fps, you might think it's okay. But maybe your website can only run at 70~80fps on that good computer, but the frame rate will drop below 60fps on other computers, and you won't know it.
-
-If you unlock the frame rate limit, you'll see that the performances aren't good enough, and you should run at something like 150~200fps on this computer to be safe.
-
-To unlock Chrome framerate:
-
-Close it completely —write the following instructions somewhere else if you are looking at this lesson on Chrome.
-Open the terminal.
-Open the following Github gist and launch the right command —Mac or Windows: https://gist.github.com/brunosimon/c15e7451a802fa8e34c0678620022f7d
-Chrome should open without the frame rate limit. You can test it on with the exercise by opening the FPS meter again. If it didn't work, close it and retry. If it still doesn't work, you'll have to do without it.
+To unlock Chrome framerate (app will be in an unusable state, ONLY for fps monitoring):
+(69 fps at default camera view, ~~90fps at full zoom near statue [chunks have been frustum culled])
 
 //google-chrome --args --disable-gpu-vsync --disable-frame-rate-limit
-
-Be careful; doing this will draw much more power from your computer and might result on Chrome crashing.
 
 */
 
@@ -63,7 +57,7 @@ export function makeScene() {
      const GRASS_PATCH_SIZE = 20;
      const GRASS_WIDTH = 0.75;
      const GRASS_HEIGHT = 4.5;
-     const NUM_GRASS = GRASS_PATCH_SIZE * GRASS_PATCH_SIZE * 5.0;
+     const NUM_GRASS = GRASS_PATCH_SIZE * GRASS_PATCH_SIZE * 3.0;
      const NUM_PATCHES = 10;
      const TOTAL_SIZE = GRASS_PATCH_SIZE * NUM_PATCHES * 2; //600
 
@@ -133,12 +127,12 @@ export function makeScene() {
      //      scene.background = envMap;
      //      scene.backgroundRotation.y += Math.PI * 1.125;
      // });
-          const skyLoader = new TextureLoader();
-          const sky = skyLoader.load('puresky.webp', () => {
-               sky.mapping = EquirectangularReflectionMapping;
-               sky.colorSpace = SRGBColorSpace;
-               scene.background = sky;
-               scene.backgroundRotation.y += Math.PI * 1.125;
+     const skyLoader = new TextureLoader();
+     const sky = skyLoader.load('puresky.webp', () => {
+          sky.mapping = EquirectangularReflectionMapping;
+          sky.colorSpace = SRGBColorSpace;
+          scene.background = sky;
+          scene.backgroundRotation.y += Math.PI * 1.125;
      })
 
      //Make grass
@@ -155,17 +149,22 @@ export function makeScene() {
           side: FrontSide,
      });
      const grassGeometry = createGeometry(GRASS_SEGMENTS);
-     let counter = 0;
+
      for (let i = -(NUM_PATCHES / 2); i < (NUM_PATCHES / 2); i++) {
           for (let j = -(NUM_PATCHES / 2); j < (NUM_PATCHES / 2); j++) {
-               grassUniforms.grassParams.value.y = Math.abs(Math.random()*10);
-               grassUniforms.i.value = i;
-               grassUniforms.j.value = j;
-               const grass = new Mesh(grassGeometry, grassMaterial);
-               scene.add(grass);
+               const material = grassMaterial.clone();
+
+               material.uniforms = {
+                    time: grassUniforms.time,  // shared
+                    grassParams: grassUniforms.grassParams,  // shared
+                    i: { value: i },   // unique
+                    j: { value: j }    // unique
+               };
+
+               const grass = new Mesh(grassGeometry, material);
                grass.position.setX((GRASS_PATCH_SIZE * i * 2) + GRASS_PATCH_SIZE);
                grass.position.setZ((GRASS_PATCH_SIZE * j * 2) + GRASS_PATCH_SIZE);
-               grass.name = `grass(${i},${j})`;
+               scene.add(grass);
           }
      }
 
@@ -241,7 +240,7 @@ export function makeScene() {
 
      window.addEventListener("resize", onResize);
 
-     const controls = null;//new OrbitControls(camera, renderer.domElement);
+     const controls = new OrbitControls(camera, renderer.domElement);
 
 
      return {
@@ -250,14 +249,16 @@ export function makeScene() {
           grassUniforms,
           statueParts,
           controls,
-          stats
+          stats,
+          //renderer,
+          //scene
      };
 
 }  
 
 
 export function startSceneTick(sceneCtx, appState, dom) {
-     const { camera, composer, grassUniforms, statueParts, controls, stats } = sceneCtx;
+     const { camera, composer, grassUniforms, statueParts, controls, stats/*, renderer, scene*/ } = sceneCtx;
      const { nav, name } = dom;
      const timer = new Timer();
      let rafId = null;
@@ -273,12 +274,12 @@ export function startSceneTick(sceneCtx, appState, dom) {
 
           grassUniforms.time.value = elapsedTime;
 
-          camera.fov = lerp(80, 100, appState.scrollValue);
-          camera.position.z = lerp(-310, -33, appState.scrollValue);
-          camera.position.y = lerp(-5, 5, appState.scrollValue);
-          camera.position.x = lerp(0, -33, appState.scrollValue);
-          camera.rotation.y = lerp(0, Math.PI * -0.2, appState.scrollValue);
-          //controls.update();
+          // camera.fov = lerp(80, 100, appState.scrollValue);
+          // camera.position.z = lerp(-310, -33, appState.scrollValue);
+          // camera.position.y = lerp(-5, 5, appState.scrollValue);
+          // camera.position.x = lerp(0, -33, appState.scrollValue);
+          // camera.rotation.y = lerp(0, Math.PI * -0.2, appState.scrollValue);
+          controls.update();
           camera.updateProjectionMatrix();
 
           for (let i = 0; i < statueParts.length; i++)
@@ -312,8 +313,10 @@ export function startSceneTick(sceneCtx, appState, dom) {
           }
           stats.begin();
           composer.render();
+          //renderer.render(scene, camera);
           stats.end();
-          rafId = requestAnimationFrame(tick);
+          rafId = requestAnimationFrame(tick);   
+          //console.log(renderer.info.render.calls, renderer.info.render.triangles); 
      };
 
      function startLoop() {

@@ -1,5 +1,7 @@
 uniform vec4 grassParams;
 uniform float time;
+uniform float i;
+uniform float j;
 
 varying vec3 vColour;
 varying vec4 vGrassData;
@@ -156,7 +158,10 @@ void main(){
      // Figure out grass offset
      vec2 hashedInstanceID=hash21(float(gl_InstanceID))*2.-1.;
      vec3 grassOffset=vec3(hashedInstanceID.x,0.,hashedInstanceID.y)*GRASS_PATCH_SIZE;
-     grassOffset.y=getElevation(grassOffset);
+     vec3 grassChunkElevationOffset = grassOffset;
+     grassChunkElevationOffset.x += (i * GRASS_PATCH_SIZE * 2.) + GRASS_PATCH_SIZE;
+     grassChunkElevationOffset.z += (j * GRASS_PATCH_SIZE * 2.) + GRASS_PATCH_SIZE;
+     grassOffset.y=getElevation(grassChunkElevationOffset);
      
      vec3 grassBladeWorldPos=(modelMatrix*vec4(grassOffset,1.)).xyz;
      vec3 hashVal=hash(grassBladeWorldPos);
