@@ -262,6 +262,7 @@ void main(){
      float noiseValue=noise(grassBladeWorldPos*.1);
      vColour=mix(c1,c2,smoothstep(-1.,1.,noiseValue));
      //vColour = mix(c3, vColour, smoothstep(-1.0, 1.0, noise(grassBladeWorldPos * 0.1)));
+     //vColour += vec3((i + 1.) / 3., 0, (j + 1.) / 3.); //uncomment for chunk debug colors! beautiful!
      
      vNormal=normalize((modelMatrix*vec4(grassLocalNormal,0.)).xyz);
      vWorldPosition=(modelMatrix*vec4(grassLocalPosition,1.)).xyz;
