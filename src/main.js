@@ -9,30 +9,30 @@ import get404Page from "./routes/404.md?raw";
 // import getBlogPage from "./routes/blog.md?raw";
 
 
-if (window.innerWidth <= 768) {
-     document.body.innerHTML = `
-    <div style="
-      height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      flex-direction: column;
-      text-align:center;
-      font-size:20px;
-      padding-left: 20px;
-      padding-right: 20px;
-      color: white;
-      background-color: black;
-      font-family: inter;
-    ">
-      <p>Unfortunately, this website does not yet support mobile usage.</p>
-      <p>The 3D scene is pretty resource intensive (very, very laggy on mobile devices), and responsiveness has not yet been implemented.</p>
-      <p>Please use a PC to access my page. Sorry for the inconvenience!</p>
-      <p>I’m working on it right now!</p>
-      <p> -Sean </p>
-    </div>
-  `;
-}
+// if (window.innerWidth <= 768) {
+//      document.body.innerHTML = `
+//     <div style="
+//       height:100vh;
+//       display:flex;
+//       align-items:center;
+//       justify-content:center;
+//       flex-direction: column;
+//       text-align:center;
+//       font-size:20px;
+//       padding-left: 20px;
+//       padding-right: 20px;
+//       color: white;
+//       background-color: black;
+//       font-family: inter;
+//     ">
+//       <p>Unfortunately, this website does not yet support mobile usage.</p>
+//       <p>The 3D scene is pretty resource intensive (very, very laggy on mobile devices), and responsiveness has not yet been implemented.</p>
+//       <p>Please use a PC to access my page. Sorry for the inconvenience!</p>
+//       <p>I’m working on it right now!</p>
+//       <p> -Sean </p>
+//     </div>
+//   `;
+// }
 
 const scrollTarget = document.getElementById("webgl");
 const canvas = document.querySelector("canvas.webgl");
@@ -212,35 +212,35 @@ async function handleRouteChange() {
                     handleRouteChange();
                });
           });
-     } else if (path === "/blog") {
-          view = md.render(getBlogPage); // Handle /blog exactly
-          document.getElementById("overlay-content").innerHTML = view;
-          for (let xxx of json) {
-               if (xxx.blog)
-                    blogParsing.renderBlogCard(xxx)
-          }
+     // } else if (path === "/blog") {
+     //      view = md.render(getBlogPage); // Handle /blog exactly
+     //      document.getElementById("overlay-content").innerHTML = view;
+     //      for (let xxx of json) {
+     //           if (xxx.blog)
+     //                blogParsing.renderBlogCard(xxx)
+     //      }
 
 
-          ensureScrolled();
+     //      ensureScrolled();
 
-          document.querySelectorAll(".route").forEach((link) => {
-               link.addEventListener("click", function (e) {
-                    // Check if the link is external (not part of your SPA)
-                    const isExternal = this.hostname !== window.location.hostname;
+     //      document.querySelectorAll(".route").forEach((link) => {
+     //           link.addEventListener("click", function (e) {
+     //                // Check if the link is external (not part of your SPA)
+     //                const isExternal = this.hostname !== window.location.hostname;
 
-                    if (isExternal) {
-                         // Open external links in a new tab
-                         window.open(this.href, "_blank");
-                         e.preventDefault(); // Prevent SPA routing logic for external links
-                         return;
-                    }
+     //                if (isExternal) {
+     //                     // Open external links in a new tab
+     //                     window.open(this.href, "_blank");
+     //                     e.preventDefault(); // Prevent SPA routing logic for external links
+     //                     return;
+     //                }
 
-                    // For internal links, handle routing in your SPA
-                    e.preventDefault();
-                    history.pushState(null, "", this.href);
-                    handleRouteChange();
-               });
-          });
+     //                // For internal links, handle routing in your SPA
+     //                e.preventDefault();
+     //                history.pushState(null, "", this.href);
+     //                handleRouteChange();
+     //           });
+     //      });
      } else if (path.startsWith("/blog")) {
           const blogObject = blogParsing.findBlogContent(path, json);
           const blogBody = md.render(blogObject.blog);

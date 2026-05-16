@@ -1,14 +1,34 @@
-import * as THREE from "three";
+import { Scene, WebGLRenderer, Color, InstancedBufferGeometry, InstancedBufferAttribute, Sphere, Vector3, TextureLoader, RepeatWrapping, ShaderMaterial, PlaneGeometry, Mesh, EquirectangularReflectionMapping, Vector4, FrontSide, MeshMatcapMaterial, PerspectiveCamera, Timer, SRGBColorSpace } from "three";
 import { HDRLoader } from "three/addons/loaders/HDRLoader.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { SMAAPass } from "three/examples/jsm/postprocessing/SMAAPass.js";
 import { Cache } from "three";
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
+import Stats from 'stats.js';
 import fshGrassText from "./shaders/grass_fragment_shader.glsl?raw";
 import vshGrassText from "./shaders/grass_vertex_shader.glsl?raw";
 import fshGroundText from "./shaders/ground_fragment_shader.glsl?raw";
 import vshGroundText from "./shaders/ground_vertex_shader.glsl?raw";
+
+
+//TODO
+
+//1. Photoshop the .webp to have blown out whites + bloom (think black hole sun music video). You can download the 8K .jpg from HDRIHaven. Kloofendall48d
+
+
+
+
+
+/* 
+To unlock Chrome framerate (app will be in an unusable state, ONLY for fps monitoring):
+(69 fps at default camera view, ~~90fps at full zoom near statue [chunks have been frustum culled])
+
+//google-chrome --args --disable-gpu-vsync --disable-frame-rate-limit
+
+*/
 
 function lerp(a, b, t) {
      return a + (b - a) * t;
@@ -16,9 +36,12 @@ function lerp(a, b, t) {
 
 export function makeScene() {
 
+     const stats = new Stats();
+     document.body.appendChild(stats.dom);
+
      const canvas = document.querySelector("canvas.webgl");
-     const scene = new THREE.Scene();
-     const renderer = new THREE.WebGLRenderer({ canvas: canvas });
+     const scene = new Scene();
+     const renderer = new WebGLRenderer({ canvas: canvas, powerPreference: 'high-performance' });
      const screenSizes = {
           width: window.innerWidth,
           height: window.innerHeight,
@@ -26,13 +49,18 @@ export function makeScene() {
      renderer.setSize(screenSizes.width, screenSizes.height);
      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
      Cache.enabled = true;
-     scene.background = new THREE.Color(0x9095cc)
+     scene.background = new Color(0x9095cc);
 
-     const GRASS_SEGMENTS = 5;
-     const GRASS_PATCH_SIZE = 300;
+
+
+     const GRASS_SEGMENTS = 4;
+     const GRASS_PATCH_SIZE = 20;
      const GRASS_WIDTH = 0.75;
      const GRASS_HEIGHT = 4.5;
      const NUM_GRASS = GRASS_PATCH_SIZE * GRASS_PATCH_SIZE * 3.0;
+     const NUM_PATCHES = 10;
+     const TOTAL_SIZE = GRASS_PATCH_SIZE * NUM_PATCHES * 2; //600
+
 
      function createGeometry(segments) {
           const VERTICES = (segments + 1) * 2;
@@ -58,11 +86,11 @@ export function makeScene() {
                indeces[i * 12 + 11] = fi + 2;
           }
 
-          const geometry = new THREE.InstancedBufferGeometry();
+          const geometry = new InstancedBufferGeometry();
           geometry.instanceCount = NUM_GRASS;
           geometry.setIndex(indeces);
-          geometry.boundingSphere = new THREE.Sphere(
-               new THREE.Vector3(0, 0, 0),
+          geometry.boundingSphere = new Sphere(
+               new Vector3(0, 0, 0),
                1 + GRASS_PATCH_SIZE * 2,
           );
 
@@ -70,10 +98,10 @@ export function makeScene() {
      }
 
      //Make ground
-     const terrainDiffuse = new THREE.TextureLoader().load("/terrainTexture/Terrain_Texture_BaseColor.png");
-     terrainDiffuse.wrapS = THREE.RepeatWrapping;
-     terrainDiffuse.wrapT = THREE.RepeatWrapping;
-     const groundMaterial = new THREE.ShaderMaterial({
+     const terrainDiffuse = new TextureLoader().load("/terrainTexture/Terrain_Texture_BaseColor.webp"); //converted from png to webp: 567kB to 49kB
+     terrainDiffuse.wrapS = RepeatWrapping;
+     terrainDiffuse.wrapT = RepeatWrapping;
+     const groundMaterial = new ShaderMaterial({
           uniforms:
           {
                uTerrainTexture: { value: terrainDiffuse },
@@ -82,78 +110,101 @@ export function makeScene() {
           vertexShader: vshGroundText,
           fragmentShader: fshGroundText,
      });
-     const groundGeometry = new THREE.PlaneGeometry(
-          GRASS_PATCH_SIZE * 2,
-          GRASS_PATCH_SIZE * 2,
-          32,
-          32,
+     const groundGeometry = new PlaneGeometry(
+          TOTAL_SIZE,
+          TOTAL_SIZE,
+          128,
+          128,
      );
-     const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+     const ground = new Mesh(groundGeometry, groundMaterial);
      ground.rotateX(-Math.PI / 2);
      scene.add(ground);
 
      //Make sky
-     const hdrLoader = new HDRLoader();
-     hdrLoader.loadAsync("/puresky2.hdr").then((envMap) => {
-          envMap.mapping = THREE.EquirectangularReflectionMapping;
-          scene.background = envMap;
+     // const hdrLoader = new HDRLoader();
+     // hdrLoader.loadAsync("/puresky2.hdr").then((envMap) => {
+     //      envMap.mapping = EquirectangularReflectionMapping;
+     //      scene.background = envMap;
+     //      scene.backgroundRotation.y += Math.PI * 1.125;
+     // });
+     const skyLoader = new TextureLoader();
+     const sky = skyLoader.load('puresky.webp', () => {
+          sky.mapping = EquirectangularReflectionMapping;
+          sky.colorSpace = SRGBColorSpace;
+          scene.background = sky;
           scene.backgroundRotation.y += Math.PI * 1.125;
-     });
+     })
 
      //Make grass
      const grassUniforms = {
-          grassParams: { value: new THREE.Vector4(GRASS_SEGMENTS, GRASS_PATCH_SIZE, GRASS_WIDTH, GRASS_HEIGHT) },
-          time: { value: 0 }
+          grassParams: { value: new Vector4(GRASS_SEGMENTS, GRASS_PATCH_SIZE, GRASS_WIDTH, GRASS_HEIGHT) },
+          time: { value: 0 },
+          i: { value: 0 },
+          j: { value: 0 }
      };
-     const grassMaterial = new THREE.ShaderMaterial({
+     const grassMaterial = new ShaderMaterial({
           uniforms: grassUniforms,
           vertexShader: vshGrassText,
           fragmentShader: fshGrassText,
-          side: THREE.FrontSide,
+          side: FrontSide,
      });
      const grassGeometry = createGeometry(GRASS_SEGMENTS);
-     const grass = new THREE.Mesh(grassGeometry, grassMaterial);
-     scene.add(grass);
 
-     //Make statue
-     const randInt = Math.floor(Math.random() * 6.0) + 1.0; //random matcap material on DOM load, change 6.0 to the number of matcap files you have [1,x]
-     const gltfLoader = new GLTFLoader();
-     const matcapTexture = new THREE.TextureLoader().load(`/matcap${randInt}.png`);
-     const matcapMaterial = new THREE.MeshMatcapMaterial({
-          matcap: matcapTexture
-     });
-     let statueParts = [];
+     for (let i = -(NUM_PATCHES / 2); i < (NUM_PATCHES / 2); i++) {
+          for (let j = -(NUM_PATCHES / 2); j < (NUM_PATCHES / 2); j++) {
+               const material = grassMaterial.clone();
 
-     async function loadStatue(scene) {
-          try {
-               const gltf = await gltfLoader.loadAsync('/bust_separated.glb');
-               const statue = gltf.scene;
+               material.uniforms = {
+                    time: grassUniforms.time,  // shared
+                    grassParams: grassUniforms.grassParams,  // shared
+                    i: { value: i },   // unique
+                    j: { value: j }    // unique
+               };
 
-               statue.traverse((child) => {
-                    if (child.isMesh) {
-                         child.material = matcapMaterial;
-                         child.position.set(-3, -30, -3);
-                         child.rotation.y = 4;
-                         child.scale.set(3, 3, 3);
-                    }
-
-               });
-               statueParts.push(...statue.children);
-               scene.add(statue);
-               return statue;
-
-          } catch (error) {
-               console.error('Error loading GLTF:', error);
+               const grass = new Mesh(grassGeometry, material);
+               grass.position.setX((GRASS_PATCH_SIZE * i * 2) + GRASS_PATCH_SIZE);
+               grass.position.setZ((GRASS_PATCH_SIZE * j * 2) + GRASS_PATCH_SIZE);
+               scene.add(grass);
           }
      }
-     loadStatue(scene);
 
-     // //make Origin Marker
-     // const cubeGeo = new THREE.BoxGeometry(1, 100, 1);
-     // const cube = new THREE.Mesh(cubeGeo, matcapMaterial)
+     // Make statue
+     const dracoLoader = new DRACOLoader();
+     dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.4.1/'); //recommended by google, as more users will have this in their cache
+
+     const randInt = Math.floor(Math.random() * 6) + 1; // random matcap
+     const matcapTexture = new TextureLoader().load(`/matcap${randInt}.webp`);
+     const matcapMaterial = new MeshMatcapMaterial({ matcap: matcapTexture });
+
+     let statueParts = [];
+
+     async function loadDRCStatue(scene) {
+          for (let i = 1; i < 10; i++)
+          {
+               // Decode the DRACO geometry and make a mesh.
+               const geometry = await dracoLoader.loadAsync(`bust/bust_00${i}.drc`);
+               const statueMesh = new Mesh(geometry, matcapMaterial);
+
+
+               // Transform mesh
+               statueMesh.position.set(-3, -30, -3);
+               statueMesh.rotation.y = 4;
+               //statueMesh.name = `bust_00${i}`;
+
+               // Add to scene and track parts
+               statueParts.push(statueMesh);
+               scene.add(statueMesh);
+          }
+     }
+
+     loadDRCStatue(scene);
+
+     //make Origin Marker
+     // const cubeGeo = new BoxGeometry(1, 100, 1);
+     // const cube = new Mesh(cubeGeo, matcapMaterial)
      // scene.add(cube);
 
-     const camera = new THREE.PerspectiveCamera(80, screenSizes.width / screenSizes.height, 0.1, 750);
+     const camera = new PerspectiveCamera(80, screenSizes.width / screenSizes.height, 0.1, 750);
      camera.position.set(70, 10, -310);
      camera.lookAt(0, 0, 0);
      scene.add(camera);
@@ -189,20 +240,27 @@ export function makeScene() {
 
      window.addEventListener("resize", onResize);
 
+     const controls = new OrbitControls(camera, renderer.domElement);
+
+
      return {
           camera,
           composer,
           grassUniforms,
-          statueParts
+          statueParts,
+          controls,
+          stats,
+          //renderer,
+          //scene
      };
 
 }  
 
 
 export function startSceneTick(sceneCtx, appState, dom) {
-     const { camera, composer, grassUniforms, statueParts } = sceneCtx;
+     const { camera, composer, grassUniforms, statueParts, controls, stats/*, renderer, scene*/ } = sceneCtx;
      const { nav, name } = dom;
-     const timer = new THREE.Timer();
+     const timer = new Timer();
      let rafId = null;
      let running = false;
      timer.connect(document);
@@ -216,15 +274,16 @@ export function startSceneTick(sceneCtx, appState, dom) {
 
           grassUniforms.time.value = elapsedTime;
 
-          camera.fov = lerp(80, 100, appState.scrollValue);
-          camera.position.z = lerp(-310, -33, appState.scrollValue);
-          camera.position.y = lerp(-5, 5, appState.scrollValue);
-          camera.position.x = lerp(0, -33, appState.scrollValue);
-          camera.rotation.y = lerp(0, Math.PI * -0.2, appState.scrollValue);
+          // camera.fov = lerp(80, 100, appState.scrollValue);
+          // camera.position.z = lerp(-310, -33, appState.scrollValue);
+          // camera.position.y = lerp(-5, 5, appState.scrollValue);
+          // camera.position.x = lerp(0, -33, appState.scrollValue);
+          // camera.rotation.y = lerp(0, Math.PI * -0.2, appState.scrollValue);
+          controls.update();
           camera.updateProjectionMatrix();
 
           for (let i = 0; i < statueParts.length; i++)
-               statueParts[i].position.y = -33 + (i * (Math.cos(statueTimer) + 0.95) * 1.5);
+               statueParts[i].position.y = -33 + (i * (Math.sin(statueTimer) + 0.95) * 1.5);
 
           // UI trigger logic
           if (appState.scrollValue > appState.threshold && !appState.uiShown && !appState.uiShownFullscreenOverruled) {
@@ -252,8 +311,12 @@ export function startSceneTick(sceneCtx, appState, dom) {
                document.getElementById("overlay").classList.add("overlay--hidden");
                appState.uiShown = false;
           }
+          stats.begin();
           composer.render();
-          rafId = requestAnimationFrame(tick);
+          //renderer.render(scene, camera);
+          stats.end();
+          rafId = requestAnimationFrame(tick);   
+          //console.log(renderer.info.render.calls, renderer.info.render.triangles); 
      };
 
      function startLoop() {

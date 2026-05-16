@@ -1,6 +1,7 @@
 @font-face {
      font-family: 'Comfortaa';
      src: url(/Comfortaa-Regular.ttf);
+     font-display: swap;
 }
 
 html, body {
@@ -151,7 +152,7 @@ pre {
 
 .overlay--hidden {
      width: 40vw;
-     right: -40vw;
+     right: calc(-40vw - 2px);
      content: "";
 }
 
