@@ -2,6 +2,7 @@ uniform vec4 grassParams;
 uniform float time;
 uniform float i;
 uniform float j;
+attribute vec2 chunkOffset;
 
 varying vec3 vColour;
 varying vec4 vGrassData;
@@ -159,9 +160,11 @@ void main(){
      vec2 hashedInstanceID=hash21(float(gl_InstanceID))*2.-1.;
      vec3 grassOffset=vec3(hashedInstanceID.x,0.,hashedInstanceID.y)*GRASS_PATCH_SIZE;
      vec3 grassChunkElevationOffset = grassOffset;
-     grassChunkElevationOffset.x += (i * GRASS_PATCH_SIZE * 2.) + GRASS_PATCH_SIZE;
-     grassChunkElevationOffset.z += (j * GRASS_PATCH_SIZE * 2.) + GRASS_PATCH_SIZE;
+     grassChunkElevationOffset.x += (chunkOffset.x * GRASS_PATCH_SIZE * 2.) + GRASS_PATCH_SIZE;
+     grassChunkElevationOffset.z += (chunkOffset.y * GRASS_PATCH_SIZE * 2.) + GRASS_PATCH_SIZE;
      grassOffset.y=getElevation(grassChunkElevationOffset);
+     grassOffset.x += (chunkOffset.x * GRASS_PATCH_SIZE * 2.) + GRASS_PATCH_SIZE;
+     grassOffset.z +=(chunkOffset.y*GRASS_PATCH_SIZE*2.)+GRASS_PATCH_SIZE;
      
      vec3 grassBladeWorldPos=(modelMatrix*vec4(grassOffset,1.)).xyz;
      vec3 hashVal=hash(grassBladeWorldPos);
@@ -232,7 +235,7 @@ void main(){
      /////////////////////////////////////////////////////////////////////////////////////////////////
      /////////////////////////////////////////////////////////////////////////////////////////////////
      float dist=length(grassBladeWorldPos.xz);
-     float mask=smoothstep(14.0,15.0,dist);// 0 inside, 1 outside
+     float mask=smoothstep(14.0,15.0,dist);// 0 inside, 1 outside  //14.0, 15.0
      vec3 maskedPosition=mix(grassOffset,grassLocalPosition,mask);
      
      //Blend normal
@@ -262,7 +265,7 @@ void main(){
      float noiseValue=noise(grassBladeWorldPos*.1);
      vColour=mix(c1,c2,smoothstep(-1.,1.,noiseValue));
      //vColour = mix(c3, vColour, smoothstep(-1.0, 1.0, noise(grassBladeWorldPos * 0.1)));
-     //vColour += vec3((i + 1.) / 3., 0, (j + 1.) / 3.); //uncomment for chunk debug colors! beautiful!
+     vColour += (vec3((chunkOffset.x + 1.) / 3., 0, (chunkOffset.y + 1.) / 3.)) * 0.02; //uncomment for chunk debug colors! beautiful!
      
      vNormal=normalize((modelMatrix*vec4(grassLocalNormal,0.)).xyz);
      vWorldPosition=(modelMatrix*vec4(grassLocalPosition,1.)).xyz;

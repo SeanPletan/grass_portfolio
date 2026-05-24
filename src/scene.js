@@ -1,4 +1,4 @@
-import { Scene, WebGLRenderer, Color, InstancedBufferGeometry, InstancedBufferAttribute, Sphere, Vector3, TextureLoader, RepeatWrapping, ShaderMaterial, PlaneGeometry, Mesh, EquirectangularReflectionMapping, Vector4, FrontSide, MeshMatcapMaterial, PerspectiveCamera, Timer, SRGBColorSpace } from "three";
+import { Scene, Vector2, WebGLRenderer, Color, InstancedBufferGeometry, InstancedBufferAttribute, Sphere, Vector3, TextureLoader, RepeatWrapping, ShaderMaterial, PlaneGeometry, Mesh, EquirectangularReflectionMapping, Vector4, FrontSide, MeshMatcapMaterial, PerspectiveCamera, Timer, SRGBColorSpace, InstancedMesh, Frustum, Matrix4, Box3} from "three";
 import { HDRLoader } from "three/addons/loaders/HDRLoader.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
@@ -18,8 +18,6 @@ import vshGroundText from "./shaders/ground_vertex_shader.glsl?raw";
 
 //1. Photoshop the .webp to have blown out whites + bloom (think black hole sun music video). You can download the 8K .jpg from HDRIHaven. Kloofendall48d
 
-
-//testeroo
 
 
 /* 
@@ -54,14 +52,21 @@ export function makeScene() {
 
 
      const GRASS_SEGMENTS = 4;
-     const GRASS_PATCH_SIZE = 20;
      const GRASS_WIDTH = 0.75;
      const GRASS_HEIGHT = 4.5;
-     const NUM_GRASS = GRASS_PATCH_SIZE * GRASS_PATCH_SIZE * 3.0;
-     const NUM_PATCHES = 10;
-     const TOTAL_SIZE = GRASS_PATCH_SIZE * NUM_PATCHES * 2; //600
 
+     const GRASS_DENSITY = 3.0;
+     const GRASS_CHUNK_SIZE = 10.;
+     const NUM_CHUNKS_PER_SIDE = 30.0;     
+     
+     const NUM_GRASS_PER_CHUNK = GRASS_CHUNK_SIZE * GRASS_CHUNK_SIZE * GRASS_DENSITY;
+     const TOTAL_NUM_GRASS = NUM_GRASS_PER_CHUNK * NUM_CHUNKS_PER_SIDE * NUM_CHUNKS_PER_SIDE;
+     const TOTAL_GROUND_SIZE = GRASS_CHUNK_SIZE * NUM_CHUNKS_PER_SIDE * 2; //600
 
+     //////////////////////////////////////////////////////////////////////////////////////////////////////////
+     ///////////////////////////////////////////START GRASS CREATION///////////////////////////////////////////
+     //////////////////////////////////////////////////////////////////////////////////////////////////////////
+     //Make grass geometry
      function createGeometry(segments) {
           const VERTICES = (segments + 1) * 2;
           const indeces = new Array(segments * 12);
@@ -87,60 +92,20 @@ export function makeScene() {
           }
 
           const geometry = new InstancedBufferGeometry();
-          geometry.instanceCount = NUM_GRASS;
+          geometry.instanceCount = TOTAL_NUM_GRASS;
           geometry.setIndex(indeces);
           geometry.boundingSphere = new Sphere(
                new Vector3(0, 0, 0),
-               1 + GRASS_PATCH_SIZE * 2,
+               TOTAL_GROUND_SIZE,
           );
 
           return geometry;
      }
 
-     //Make ground
-     const terrainDiffuse = new TextureLoader().load("/terrainTexture/Terrain_Texture_BaseColor.webp"); //converted from png to webp: 567kB to 49kB
-     terrainDiffuse.wrapS = RepeatWrapping;
-     terrainDiffuse.wrapT = RepeatWrapping;
-     const groundMaterial = new ShaderMaterial({
-          uniforms:
-          {
-               uTerrainTexture: { value: terrainDiffuse },
-               uTileScale: { value: 30.0 },
-          },
-          vertexShader: vshGroundText,
-          fragmentShader: fshGroundText,
-     });
-     const groundGeometry = new PlaneGeometry(
-          TOTAL_SIZE,
-          TOTAL_SIZE,
-          128,
-          128,
-     );
-     const ground = new Mesh(groundGeometry, groundMaterial);
-     ground.rotateX(-Math.PI / 2);
-     scene.add(ground);
-
-     //Make sky
-     // const hdrLoader = new HDRLoader();
-     // hdrLoader.loadAsync("/puresky2.hdr").then((envMap) => {
-     //      envMap.mapping = EquirectangularReflectionMapping;
-     //      scene.background = envMap;
-     //      scene.backgroundRotation.y += Math.PI * 1.125;
-     // });
-     const skyLoader = new TextureLoader();
-     const sky = skyLoader.load('puresky.webp', () => {
-          sky.mapping = EquirectangularReflectionMapping;
-          sky.colorSpace = SRGBColorSpace;
-          scene.background = sky;
-          scene.backgroundRotation.y += Math.PI * 1.125;
-     })
-
-     //Make grass
+     //Make grass mesh data
      const grassUniforms = {
-          grassParams: { value: new Vector4(GRASS_SEGMENTS, GRASS_PATCH_SIZE, GRASS_WIDTH, GRASS_HEIGHT) },
-          time: { value: 0 },
-          i: { value: 0 },
-          j: { value: 0 }
+          grassParams: { value: new Vector4(GRASS_SEGMENTS, GRASS_CHUNK_SIZE, GRASS_WIDTH, GRASS_HEIGHT) },
+          time: { value: 0 }
      };
      const grassMaterial = new ShaderMaterial({
           uniforms: grassUniforms,
@@ -150,23 +115,115 @@ export function makeScene() {
      });
      const grassGeometry = createGeometry(GRASS_SEGMENTS);
 
-     for (let i = -(NUM_PATCHES / 2); i < (NUM_PATCHES / 2); i++) {
-          for (let j = -(NUM_PATCHES / 2); j < (NUM_PATCHES / 2); j++) {
-               const material = grassMaterial.clone();
+     //Make grass chunks
+     class Chunk {
+          constructor(i, j) {
+               this.chunkIndex = [i, j];
 
-               material.uniforms = {
-                    time: grassUniforms.time,  // shared
-                    grassParams: grassUniforms.grassParams,  // shared
-                    i: { value: i },   // unique
-                    j: { value: j }    // unique
-               };
+               // world position of chunk center
+               this.worldCenter = new Vector3(
+                    (i * GRASS_CHUNK_SIZE * 2) + GRASS_CHUNK_SIZE,
+                    0,
+                    (j * GRASS_CHUNK_SIZE * 2) + GRASS_CHUNK_SIZE
+               );
 
-               const grass = new Mesh(grassGeometry, material);
-               grass.position.setX((GRASS_PATCH_SIZE * i * 2) + GRASS_PATCH_SIZE);
-               grass.position.setZ((GRASS_PATCH_SIZE * j * 2) + GRASS_PATCH_SIZE);
-               scene.add(grass);
+               // build per-instance data for this chunk
+               this.template = this.buildTemplate(i, j);
+
+               this.boundingBox = this.buildBoundingBox();
+          }
+
+          buildTemplate(i, j) {
+               const chunkIndexInstanceAttribute = new Float32Array(NUM_GRASS_PER_CHUNK * 2);
+
+               let ptr = 0;
+               for (let k = 0; k < NUM_GRASS_PER_CHUNK * 2; k++) {
+                    chunkIndexInstanceAttribute[ptr++] = i;
+                    chunkIndexInstanceAttribute[ptr++] = j;
+               }
+
+               return chunkIndexInstanceAttribute;
+          }
+
+          // it SHOULD be divided by 2.0 . I divided by 1.5 to give a 50% margin
+          buildBoundingBox() {
+               const min = new Vector3(
+               this.worldCenter.x - (GRASS_CHUNK_SIZE / 1.0),
+               -20,
+               this.worldCenter.z - (GRASS_CHUNK_SIZE / 1.0));
+
+               const max = new Vector3(
+                    this.worldCenter.x + (GRASS_CHUNK_SIZE / 1.0),
+                    20,
+                    this.worldCenter.z + (GRASS_CHUNK_SIZE / 1.0));
+
+               const box = new Box3(min, max);
+               //console.log(box);
+               return box;
           }
      }
+
+     const chunks = [];
+
+     for (let i = -(NUM_CHUNKS_PER_SIDE / 2); i < (NUM_CHUNKS_PER_SIDE / 2); i++) {
+          for (let j = -(NUM_CHUNKS_PER_SIDE / 2); j < (NUM_CHUNKS_PER_SIDE / 2); j++) {
+               chunks.push(new Chunk(i, j));
+          }
+     }
+
+     // buffer that goes to GPU every frame (worst case size)
+     const visibleChunkOffsetBuffer = new Float32Array(TOTAL_NUM_GRASS * 2);
+
+     const chunkOffsetAttribute = new InstancedBufferAttribute(visibleChunkOffsetBuffer, 2);
+
+     grassGeometry.setAttribute("chunkOffset", chunkOffsetAttribute);
+
+
+     //Make camera frustum for chunk culling
+     const frustum = new Frustum();
+     const projScreenMatrix = new Matrix4();
+
+     //frustum culling loop and dynamic frame visibility buffer
+     function updateGrassCulling(camera) {
+
+          // STEP 1 — build camera frustum
+          camera.updateMatrixWorld();
+          projScreenMatrix.multiplyMatrices(
+               camera.projectionMatrix,
+               camera.matrixWorldInverse
+          );
+          frustum.setFromProjectionMatrix(projScreenMatrix);
+
+          // STEP 2 — iterate chunks + stream visible templates
+          let visiblePtr = 0;
+
+          for (const chunk of chunks) {
+               if (!frustum.intersectsBox(chunk.boundingBox)) {
+                    //console.log(chunk.chunkIndex)
+                    continue;               
+               }
+
+
+               // STEP 4 — memcpy template into visible buffer
+               visibleChunkOffsetBuffer.set(chunk.template, visiblePtr);
+
+               visiblePtr += chunk.template.length;
+          }
+
+          // STEP 5 — upload only the part we filled
+          chunkOffsetAttribute.needsUpdate = true;
+
+          // STEP 6 — tell GPU how many instances to draw
+          grassGeometry.instanceCount = visiblePtr / 2;
+     }
+
+     const grass = new Mesh(grassGeometry, grassMaterial);
+     scene.add(grass);
+
+     //////////////////////////////////////////////////////////////////////////////////////////////////////////
+     ////////////////////////////////////////// END GRASS CREATION ////////////////////////////////////////////
+     //////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
      // Make statue
      const dracoLoader = new DRACOLoader();
@@ -199,12 +256,39 @@ export function makeScene() {
 
      loadDRCStatue(scene);
 
-     //make Origin Marker
-     // const cubeGeo = new BoxGeometry(1, 100, 1);
-     // const cube = new Mesh(cubeGeo, matcapMaterial)
-     // scene.add(cube);
+     //Make ground
+     const terrainDiffuse = new TextureLoader().load("/terrainTexture/Terrain_Texture_BaseColor.webp"); //converted from png to webp: 567kB to 49kB
+     terrainDiffuse.wrapS = RepeatWrapping;
+     terrainDiffuse.wrapT = RepeatWrapping;
+     const groundMaterial = new ShaderMaterial({
+          uniforms:
+          {
+               uTerrainTexture: { value: terrainDiffuse },
+               uTileScale: { value: 30.0 },
+          },
+          vertexShader: vshGroundText,
+          fragmentShader: fshGroundText,
+     });
+     const groundGeometry = new PlaneGeometry(
+          TOTAL_GROUND_SIZE,
+          TOTAL_GROUND_SIZE,
+          128,
+          128,
+     );
+     const ground = new Mesh(groundGeometry, groundMaterial);
+     ground.rotateX(-Math.PI / 2);
+     scene.add(ground);
 
-     const camera = new PerspectiveCamera(80, screenSizes.width / screenSizes.height, 0.1, 750);
+     //Make sky
+     const skyLoader = new TextureLoader();
+     const sky = skyLoader.load('puresky.webp', () => {
+          sky.mapping = EquirectangularReflectionMapping;
+          sky.colorSpace = SRGBColorSpace;
+          scene.background = sky;
+          scene.backgroundRotation.y += Math.PI * 1.125;
+     })
+
+     const camera = new PerspectiveCamera(80, screenSizes.width / screenSizes.height, 1.0, 2000);
      camera.position.set(70, 10, -310);
      camera.lookAt(0, 0, 0);
      scene.add(camera);
@@ -240,7 +324,7 @@ export function makeScene() {
 
      window.addEventListener("resize", onResize);
 
-     const controls = new OrbitControls(camera, renderer.domElement);
+     const controls = null;//ew OrbitControls(camera, renderer.domElement);
 
 
      return {
@@ -250,20 +334,25 @@ export function makeScene() {
           statueParts,
           controls,
           stats,
-          //renderer,
-          //scene
+          renderer,
+          grassGeometry,
+          scene,
+          updateGrassCulling,
+          frustum
      };
 
 }  
 
 
 export function startSceneTick(sceneCtx, appState, dom) {
-     const { camera, composer, grassUniforms, statueParts, controls, stats/*, renderer, scene*/ } = sceneCtx;
+     const { camera, composer, grassUniforms, grassGeometry, statueParts, controls, stats, renderer, scene, updateGrassCulling, frustum } = sceneCtx;
      const { nav, name } = dom;
      const timer = new Timer();
      let rafId = null;
      let running = false;
      timer.connect(document);
+
+     let count = 1;
 
      const tick = () => {
           if (!running) return;
@@ -272,15 +361,21 @@ export function startSceneTick(sceneCtx, appState, dom) {
           const elapsedTime = timer.getElapsed();
           const statueTimer = elapsedTime * 0.25;
 
+
           grassUniforms.time.value = elapsedTime;
 
-          // camera.fov = lerp(80, 100, appState.scrollValue);
-          // camera.position.z = lerp(-310, -33, appState.scrollValue);
-          // camera.position.y = lerp(-5, 5, appState.scrollValue);
-          // camera.position.x = lerp(0, -33, appState.scrollValue);
-          // camera.rotation.y = lerp(0, Math.PI * -0.2, appState.scrollValue);
-          controls.update();
+
+          camera.fov = lerp(80, 100, appState.scrollValue);
+          camera.position.z = lerp(-310, -33, appState.scrollValue);
+          camera.position.y = lerp(-5, 5, appState.scrollValue);
+          camera.position.x = lerp(0, -33, appState.scrollValue);
+          camera.rotation.y = lerp(0, Math.PI * -0.2, appState.scrollValue);
+          //controls.update();
           camera.updateProjectionMatrix();
+
+          updateGrassCulling(camera);
+
+
 
           for (let i = 0; i < statueParts.length; i++)
                statueParts[i].position.y = -33 + (i * (Math.sin(statueTimer) + 0.95) * 1.5);
