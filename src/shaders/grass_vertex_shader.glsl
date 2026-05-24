@@ -235,7 +235,7 @@ void main(){
      /////////////////////////////////////////////////////////////////////////////////////////////////
      /////////////////////////////////////////////////////////////////////////////////////////////////
      float dist=length(grassBladeWorldPos.xz);
-     float mask=smoothstep(14.0,15.0,dist);// 0 inside, 1 outside
+     float mask=smoothstep(14.0,15.0,dist);// 0 inside, 1 outside  //14.0, 15.0
      vec3 maskedPosition=mix(grassOffset,grassLocalPosition,mask);
      
      //Blend normal
@@ -265,7 +265,7 @@ void main(){
      float noiseValue=noise(grassBladeWorldPos*.1);
      vColour=mix(c1,c2,smoothstep(-1.,1.,noiseValue));
      //vColour = mix(c3, vColour, smoothstep(-1.0, 1.0, noise(grassBladeWorldPos * 0.1)));
-     vColour += vec3((chunkOffset.x + 1.) / 3., 0, (chunkOffset.y + 1.) / 3.); //uncomment for chunk debug colors! beautiful!
+     vColour += (vec3((chunkOffset.x + 1.) / 3., 0, (chunkOffset.y + 1.) / 3.)) * 0.02; //uncomment for chunk debug colors! beautiful!
      
      vNormal=normalize((modelMatrix*vec4(grassLocalNormal,0.)).xyz);
      vWorldPosition=(modelMatrix*vec4(grassLocalPosition,1.)).xyz;
