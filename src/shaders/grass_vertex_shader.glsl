@@ -2,7 +2,7 @@ uniform vec4 grassParams;
 uniform float time;
 uniform float i;
 uniform float j;
-attribute vec2 chunkOffset;
+attribute vec3 chunkOffset;
 
 varying vec3 vColour;
 varying vec4 vGrassData;
@@ -157,14 +157,14 @@ void main(){
      float GRASS_HEIGHT=grassParams.w;
      
      // Figure out grass offset
-     vec2 hashedInstanceID=hash21(float(gl_InstanceID))*2.-1.;
+     vec2 hashedInstanceID=hash21(float(chunkOffset.x))*2.-1.;
      vec3 grassOffset=vec3(hashedInstanceID.x,0.,hashedInstanceID.y)*GRASS_PATCH_SIZE;
      vec3 grassChunkElevationOffset = grassOffset;
-     grassChunkElevationOffset.x += (chunkOffset.x * GRASS_PATCH_SIZE * 2.) + GRASS_PATCH_SIZE;
-     grassChunkElevationOffset.z += (chunkOffset.y * GRASS_PATCH_SIZE * 2.) + GRASS_PATCH_SIZE;
+     grassChunkElevationOffset.x += (chunkOffset.y * GRASS_PATCH_SIZE * 2.) + GRASS_PATCH_SIZE;
+     grassChunkElevationOffset.z += (chunkOffset.z * GRASS_PATCH_SIZE * 2.) + GRASS_PATCH_SIZE;
      grassOffset.y=getElevation(grassChunkElevationOffset);
-     grassOffset.x += (chunkOffset.x * GRASS_PATCH_SIZE * 2.) + GRASS_PATCH_SIZE;
-     grassOffset.z +=(chunkOffset.y*GRASS_PATCH_SIZE*2.)+GRASS_PATCH_SIZE;
+     grassOffset.x += (chunkOffset.y * GRASS_PATCH_SIZE * 2.) + GRASS_PATCH_SIZE;
+     grassOffset.z +=(chunkOffset.z*GRASS_PATCH_SIZE*2.)+GRASS_PATCH_SIZE;
      
      vec3 grassBladeWorldPos=(modelMatrix*vec4(grassOffset,1.)).xyz;
      vec3 hashVal=hash(grassBladeWorldPos);
@@ -265,7 +265,7 @@ void main(){
      float noiseValue=noise(grassBladeWorldPos*.1);
      vColour=mix(c1,c2,smoothstep(-1.,1.,noiseValue));
      //vColour = mix(c3, vColour, smoothstep(-1.0, 1.0, noise(grassBladeWorldPos * 0.1)));
-     vColour += (vec3((chunkOffset.x + 1.) / 3., 0, (chunkOffset.y + 1.) / 3.)) * 0.02; //uncomment for chunk debug colors! beautiful!
+     vColour += (vec3((chunkOffset.y + 1.) / 3., 0, (chunkOffset.z + 1.) / 3.)) * 0.02; //uncomment for chunk debug colors! beautiful!
      
      vNormal=normalize((modelMatrix*vec4(grassLocalNormal,0.)).xyz);
      vWorldPosition=(modelMatrix*vec4(grassLocalPosition,1.)).xyz;

@@ -134,18 +134,21 @@ export function makeScene() {
           }
 
           buildTemplate(i, j) {
-               const chunkIndexInstanceAttribute = new Float32Array(NUM_GRASS_PER_CHUNK * 2);
+               const chunkIndexInstanceAttribute = new Float32Array(NUM_GRASS_PER_CHUNK * 3);
 
                let ptr = 0;
-               for (let k = 0; k < NUM_GRASS_PER_CHUNK * 2; k++) {
+               let ctr = 0;
+               for (let k = 0; k < NUM_GRASS_PER_CHUNK * 3; k++) {
+                    chunkIndexInstanceAttribute[ptr++] = ctr;
                     chunkIndexInstanceAttribute[ptr++] = i;
                     chunkIndexInstanceAttribute[ptr++] = j;
+                    ctr += 2; //for some reason, incrementing by 1 leads to moire patterns in the grass (2 is more random)
                }
 
                return chunkIndexInstanceAttribute;
           }
 
-          // it SHOULD be divided by 2.0 . I divided by 1.5 to give a 50% margin
+          // it SHOULD be divided by 2.0 . I divided by 1.0 to give a 100% margin
           buildBoundingBox() {
                const min = new Vector3(
                this.worldCenter.x - (GRASS_CHUNK_SIZE / 1.0),
@@ -172,9 +175,9 @@ export function makeScene() {
      }
 
      // buffer that goes to GPU every frame (worst case size)
-     const visibleChunkOffsetBuffer = new Float32Array(TOTAL_NUM_GRASS * 2);
+     const visibleChunkOffsetBuffer = new Float32Array(TOTAL_NUM_GRASS * 3);
 
-     const chunkOffsetAttribute = new InstancedBufferAttribute(visibleChunkOffsetBuffer, 2);
+     const chunkOffsetAttribute = new InstancedBufferAttribute(visibleChunkOffsetBuffer, 3);
 
      grassGeometry.setAttribute("chunkOffset", chunkOffsetAttribute);
 
@@ -196,10 +199,11 @@ export function makeScene() {
 
           // STEP 2 — iterate chunks + stream visible templates
           let visiblePtr = 0;
+          let culledChunks = 0;
 
           for (const chunk of chunks) {
                if (!frustum.intersectsBox(chunk.boundingBox)) {
-                    //console.log(chunk.chunkIndex)
+                    culledChunks++;
                     continue;               
                }
 
@@ -214,7 +218,9 @@ export function makeScene() {
           chunkOffsetAttribute.needsUpdate = true;
 
           // STEP 6 — tell GPU how many instances to draw
-          grassGeometry.instanceCount = visiblePtr / 2;
+          grassGeometry.instanceCount = visiblePtr / 3;
+
+          console.log("Culled Chunks: ", culledChunks,"/",NUM_CHUNKS_PER_SIDE*NUM_CHUNKS_PER_SIDE);
      }
 
      const grass = new Mesh(grassGeometry, grassMaterial);
@@ -272,8 +278,8 @@ export function makeScene() {
      const groundGeometry = new PlaneGeometry(
           TOTAL_GROUND_SIZE,
           TOTAL_GROUND_SIZE,
-          128,
-          128,
+          64,
+          64,
      );
      const ground = new Mesh(groundGeometry, groundMaterial);
      ground.rotateX(-Math.PI / 2);
@@ -324,7 +330,7 @@ export function makeScene() {
 
      window.addEventListener("resize", onResize);
 
-     const controls = null;//ew OrbitControls(camera, renderer.domElement);
+     const controls = new OrbitControls(camera, renderer.domElement);
 
 
      return {
@@ -365,12 +371,12 @@ export function startSceneTick(sceneCtx, appState, dom) {
           grassUniforms.time.value = elapsedTime;
 
 
-          camera.fov = lerp(80, 100, appState.scrollValue);
-          camera.position.z = lerp(-310, -33, appState.scrollValue);
-          camera.position.y = lerp(-5, 5, appState.scrollValue);
-          camera.position.x = lerp(0, -33, appState.scrollValue);
-          camera.rotation.y = lerp(0, Math.PI * -0.2, appState.scrollValue);
-          //controls.update();
+          // camera.fov = lerp(80, 100, appState.scrollValue);
+          // camera.position.z = lerp(-310, -33, appState.scrollValue);
+          // camera.position.y = lerp(-5, 5, appState.scrollValue);
+          // camera.position.x = lerp(0, -33, appState.scrollValue);
+          // camera.rotation.y = lerp(0, Math.PI * -0.2, appState.scrollValue);
+          controls.update();
           camera.updateProjectionMatrix();
 
           updateGrassCulling(camera);
