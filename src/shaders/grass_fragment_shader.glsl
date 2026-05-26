@@ -1,19 +1,11 @@
-uniform vec2 resolution;
-uniform float time;
-
 varying vec3 vColour;
 varying vec4 vGrassData;
 varying vec3 vNormal;
 varying vec3 vWorldPosition;
-varying float vWindLeanDebug;
 
-float inverseLerp(float v,float minValue,float maxValue){
-     return(v-minValue)/(maxValue-minValue);
-}
-
-float remap(float v,float inMin,float inMax,float outMin,float outMax){
-     float t=inverseLerp(v,inMin,inMax);
-     return mix(outMin,outMax,t);
+float remap(float v,float a,float b,float c,float d)
+{
+     return c+(v-a)*(d-c)/(b-a);
 }
 
 float saturate(float x){
@@ -55,7 +47,7 @@ void main(){
      vec3 normal=normalize(vNormal);
      vec3 viewDir=normalize(cameraPosition-vWorldPosition);
      
-     vec3 baseColor=mix(vColour*.75,vColour,smoothstep(.1,0.,abs(grassX)));
+     vec3 baseColor=mix(vColour * 0.75, vColour, smoothstep(0.1, 0.0, abs(grassX)));
      
      //Hemi
      vec3 c1=vec3(1.,1.,1.);
@@ -77,10 +69,7 @@ void main(){
      
      vec3 colour=baseColor*ambientLighting+specular*.25;
      colour*=ao;
-     //colour *= 0.4; //comment out for daylight
-     //colour = baseColor * ambientLighting;
      
-     //colour = (vec3(vWindLeanDebug));
      
      gl_FragColor=vec4(colour,1.);
 }

@@ -1,4 +1,4 @@
-import { Scene, Vector2, WebGLRenderer, Color, InstancedBufferGeometry, InstancedBufferAttribute, Sphere, Vector3, TextureLoader, RepeatWrapping, ShaderMaterial, PlaneGeometry, Mesh, EquirectangularReflectionMapping, Vector4, FrontSide, MeshMatcapMaterial, PerspectiveCamera, Timer, SRGBColorSpace, InstancedMesh, Frustum, Matrix4, Box3} from "three";
+import { Scene, Vector2, MathUtils, WebGLRenderer, Color, InstancedBufferGeometry, InstancedBufferAttribute, Sphere, Vector3, TextureLoader, RepeatWrapping, ShaderMaterial, PlaneGeometry, Mesh, EquirectangularReflectionMapping, Vector4, FrontSide, MeshMatcapMaterial, PerspectiveCamera, Timer, SRGBColorSpace, InstancedMesh, Frustum, Matrix4, Box3} from "three";
 import { HDRLoader } from "three/addons/loaders/HDRLoader.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
@@ -49,15 +49,20 @@ export function makeScene() {
      Cache.enabled = true;
      scene.background = new Color(0x9095cc);
 
+     const camera = new PerspectiveCamera(80, screenSizes.width / screenSizes.height, 1.0, 2000);
+     camera.position.set(70, 10, -310);
+     camera.lookAt(0, 0, 0);
+     scene.add(camera);
+
 
 
      const GRASS_SEGMENTS = 4;
      const GRASS_WIDTH = 0.75;
      const GRASS_HEIGHT = 4.5;
 
-     const GRASS_DENSITY = 3.0;
-     const GRASS_CHUNK_SIZE = 10.;
-     const NUM_CHUNKS_PER_SIDE = 30.0;     
+     const GRASS_DENSITY = 6.0;
+     const GRASS_CHUNK_SIZE = 10;
+     const NUM_CHUNKS_PER_SIDE = 30;     
      
      const NUM_GRASS_PER_CHUNK = GRASS_CHUNK_SIZE * GRASS_CHUNK_SIZE * GRASS_DENSITY;
      const TOTAL_NUM_GRASS = NUM_GRASS_PER_CHUNK * NUM_CHUNKS_PER_SIDE * NUM_CHUNKS_PER_SIDE;
@@ -199,19 +204,40 @@ export function makeScene() {
 
           // STEP 2 — iterate chunks + stream visible templates
           let visiblePtr = 0;
-          let culledChunks = 0;
+          let culledChunks = 0; //debug only; can safely delete
+
 
           for (const chunk of chunks) {
+               let lod1ChunkTemplateLength = chunk.template.length;
+               let newValue = 0.0;
+               
                if (!frustum.intersectsBox(chunk.boundingBox)) {
-                    culledChunks++;
+                    culledChunks++; // debug only
                     continue;               
                }
+
+               const dist = camera.position.distanceTo(chunk.worldCenter);
+
+               const far = TOTAL_GROUND_SIZE;
+
+               const t = MathUtils.clamp(
+                    (dist) / (far),
+                    0,
+                    1
+               );
+
+               // 1.0 near camera → 0.02 far away
+               let density = MathUtils.lerp(1.0, 0.005, t);
+
+
+               //ensure its a multiple of 3
+               lod1ChunkTemplateLength = Math.floor((chunk.template.length * density) / 3) * 3;
 
 
                // STEP 4 — memcpy template into visible buffer
                visibleChunkOffsetBuffer.set(chunk.template, visiblePtr);
 
-               visiblePtr += chunk.template.length;
+               visiblePtr += lod1ChunkTemplateLength;
           }
 
           // STEP 5 — upload only the part we filled
@@ -220,7 +246,9 @@ export function makeScene() {
           // STEP 6 — tell GPU how many instances to draw
           grassGeometry.instanceCount = visiblePtr / 3;
 
-          console.log("Culled Chunks: ", culledChunks,"/",NUM_CHUNKS_PER_SIDE*NUM_CHUNKS_PER_SIDE);
+          //console.log("Culled Chunks: ", culledChunks,"/",NUM_CHUNKS_PER_SIDE*NUM_CHUNKS_PER_SIDE);
+          //console.log("Number of instances: ", grassGeometry.instanceCount)
+          //console.log(lod1Chunks);
      }
 
      const grass = new Mesh(grassGeometry, grassMaterial);
@@ -294,10 +322,7 @@ export function makeScene() {
           scene.backgroundRotation.y += Math.PI * 1.125;
      })
 
-     const camera = new PerspectiveCamera(80, screenSizes.width / screenSizes.height, 1.0, 2000);
-     camera.position.set(70, 10, -310);
-     camera.lookAt(0, 0, 0);
-     scene.add(camera);
+
 
 
      const renderPass = new RenderPass(scene, camera);

@@ -40,13 +40,9 @@ float easeOut(float x,float t){
      return 1.-pow(1.-x,t);
 }
 
-float inverseLerp(float v,float minValue,float maxValue){
-     return(v-minValue)/(maxValue-minValue);
-}
-
-float remap(float v,float inMin,float inMax,float outMin,float outMax){
-     float t=inverseLerp(v,inMin,inMax);
-     return mix(outMin,outMax,t);
+float remap(float v,float a,float b,float c,float d)
+{
+     return c+(v-a)*(d-c)/(b-a);
 }
           
 mat3 rotateY(float theta){
@@ -137,7 +133,7 @@ float getElevation(vec3 position){
      float gain=.25;
      float lac=3.;
      
-     for(int i=1;i<=4;i++)
+     for(int i=1;i<=3;i++)
      {
           elevation+=(amp*snoise(vec2(position.x,-position.z+150.)*freq));
           amp*=gain;
@@ -146,8 +142,8 @@ float getElevation(vec3 position){
      return elevation+length(vec2(position.x,-position.z)*.02);
 }
 
-const vec3 BASE_COLOUR=vec3(.2118,.5569,.1569);
-const vec3 TIP_COLOUR=vec3(.5098,.698,.3216);
+const vec3 BASE_COLOUR=vec3(0.2118, 0.5569, 0.1569);
+const vec3 TIP_COLOUR=vec3(0.5294, 0.7176, 0.3412);
           
 void main(){
      int GRASS_SEGMENTS=int(grassParams.x);
@@ -159,13 +155,10 @@ void main(){
      // Figure out grass offset
      vec2 hashedInstanceID=hash21(float(chunkOffset.x))*2.-1.;
      vec3 grassOffset=vec3(hashedInstanceID.x,0.,hashedInstanceID.y)*GRASS_PATCH_SIZE;
-     vec3 grassChunkElevationOffset = grassOffset;
-     grassChunkElevationOffset.x += (chunkOffset.y * GRASS_PATCH_SIZE * 2.) + GRASS_PATCH_SIZE;
-     grassChunkElevationOffset.z += (chunkOffset.z * GRASS_PATCH_SIZE * 2.) + GRASS_PATCH_SIZE;
-     grassOffset.y=getElevation(grassChunkElevationOffset);
-     grassOffset.x += (chunkOffset.y * GRASS_PATCH_SIZE * 2.) + GRASS_PATCH_SIZE;
-     grassOffset.z +=(chunkOffset.z*GRASS_PATCH_SIZE*2.)+GRASS_PATCH_SIZE;
-     
+     grassOffset.x += (chunkOffset.y * GRASS_PATCH_SIZE * 2.0) + GRASS_PATCH_SIZE;
+     grassOffset.z +=(chunkOffset.z*GRASS_PATCH_SIZE * 2.0) + GRASS_PATCH_SIZE;
+     grassOffset.y=getElevation(grassOffset);     
+
      vec3 grassBladeWorldPos=(modelMatrix*vec4(grassOffset,1.)).xyz;
      vec3 hashVal=hash(grassBladeWorldPos);
 
@@ -189,7 +182,6 @@ void main(){
      float heightPercentage=float(vertID-xTest)/(float(GRASS_SEGMENTS)*2.);
      
      float width=GRASS_WIDTH*easeOut(1.-heightPercentage,2.);
-     // float width = GRASS_WIDTH * smoothstep(0.0, 0.25, 1.0 - heightPercentage); //SMOOTHSTEP SHAPING FUNCTION
      float height=GRASS_HEIGHT;
      height+=clamp(noise(vec3(grassBladeWorldPos)*.02)*3.,-2.,2.5);
      
@@ -199,11 +191,9 @@ void main(){
      float z=0.;
      
      //Grass lean factor
-     //float randWindPatchSize = remap(abs(noise(vec3(grassBladeWorldPos.zxy))), -1.0, 1.0, -0.5, 0.5);
      float windStrength=noise(vec3(grassBladeWorldPos.x*.02,0.,grassBladeWorldPos.z*.02)+(time*.4));
-     float windAngle=0.;
-     vec3 windAxis=vec3(cos(windAngle),0.,sin(windAngle));
-     float windLeanAngle=windStrength*3.*heightPercentage;///**MODIFY MIDDLE NUMBER FOR LEAN STRENGTH** (DEFAULT 1.5)
+     vec3 windAxis=vec3(0.0, 0.0, 1.0); //windAxis=vec3(cos(windAngle), 0.0, sin(windAngle));
+     float windLeanAngle=windStrength * 3.0 * heightPercentage;///**MODIFY MIDDLE NUMBER FOR LEAN STRENGTH** (DEFAULT 1.5)
      float randomLeanAnimation=noise(vec3(grassBladeWorldPos.xz,time*2.5))*(windStrength*.5+.25);
      //randomLeanAnimation = 0.0;
      float leanFactor=remap(hashVal.y,-1.,1.,-.4,.4)+randomLeanAnimation;
@@ -250,23 +240,19 @@ void main(){
      vec3 grassFaceNormal=(grassMat*vec3(0.,0.,-zSide));
      
      float viewDotNormal=saturate(dot(grassFaceNormal,viewDir));
-     float viewSpaceThickenFactor=easeOut(
-     1.-viewDotNormal,16.)*smoothstep(0.,.1,viewDotNormal);
+     float viewSpaceThickenFactor=easeOut(1.0 - viewDotNormal, 16.0) * smoothstep(0.0, 0.1, viewDotNormal);
      
      mvPosition.x+=viewSpaceThickenFactor*(xSide-.5)*width*.5*-zSide;
      
      gl_Position=projectionMatrix*mvPosition;
      
-     //vColour = grassLocalNormal; //confirming which side is front side.
      
      vec3 c1=mix(BASE_COLOUR,TIP_COLOUR,heightPercentage);
      vec3 c2=mix(vec3(.5922,.5922,.2353),vec3(.8078,.8,.3843),heightPercentage);
-     //vec3 c3 = mix(vec3(0.1569, 0.2314, 0.0), vec3(0.3294, 0.3216, 0.0), heightPercentage);
      float noiseValue=noise(grassBladeWorldPos*.1);
      vColour=mix(c1,c2,smoothstep(-1.,1.,noiseValue));
-     //vColour = mix(c3, vColour, smoothstep(-1.0, 1.0, noise(grassBladeWorldPos * 0.1)));
-     vColour += (vec3((chunkOffset.y + 1.) / 3., 0, (chunkOffset.z + 1.) / 3.)) * 0.02; //uncomment for chunk debug colors! beautiful!
-     
+     //vColour += (vec3((chunkOffset.y + 1.) / 3., 0, (chunkOffset.z + 1.) / 3.)); //uncomment for chunk debug colors! beautiful!
+
      vNormal=normalize((modelMatrix*vec4(grassLocalNormal,0.)).xyz);
      vWorldPosition=(modelMatrix*vec4(grassLocalPosition,1.)).xyz;
      
