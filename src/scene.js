@@ -355,7 +355,7 @@ export function makeScene() {
 
      window.addEventListener("resize", onResize);
 
-     const controls = new OrbitControls(camera, renderer.domElement);
+     const controls = null;//new OrbitControls(camera, renderer.domElement);
 
 
      return {
@@ -396,12 +396,12 @@ export function startSceneTick(sceneCtx, appState, dom) {
           grassUniforms.time.value = elapsedTime;
 
 
-          // camera.fov = lerp(80, 100, appState.scrollValue);
-          // camera.position.z = lerp(-310, -33, appState.scrollValue);
-          // camera.position.y = lerp(-5, 5, appState.scrollValue);
-          // camera.position.x = lerp(0, -33, appState.scrollValue);
-          // camera.rotation.y = lerp(0, Math.PI * -0.2, appState.scrollValue);
-          controls.update();
+          camera.fov = lerp(80, 100, appState.scrollValue);
+          camera.position.z = lerp(-310, -33, appState.scrollValue);
+          camera.position.y = lerp(-5, 5, appState.scrollValue);
+          camera.position.x = lerp(0, -33, appState.scrollValue);
+          camera.rotation.y = lerp(0, Math.PI * -0.2, appState.scrollValue);
+          //controls.update();
           camera.updateProjectionMatrix();
 
           updateGrassCulling(camera);
