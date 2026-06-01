@@ -334,9 +334,9 @@ window.addEventListener('touchstart', (e) => {
 window.addEventListener('touchmove', (e) => {
      const currentY = e.touches[0].clientY;
 
-     const delta = lastY - currentY;
+     const delta = currentY - lastY;
 
-     appState.scrollValue += delta * 0.002;
+     appState.scrollValue += delta * 0.0025;
 
      appState.scrollValue = Math.min(Math.max(appState.scrollValue, 0), 1);
 
