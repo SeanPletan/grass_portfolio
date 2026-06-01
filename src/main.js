@@ -68,7 +68,9 @@ async function loadAllMarkdown() {
 }
 
 
-
+function isMobile() {
+     return window.matchMedia("(max-width: 768px)").matches;
+}
 
 function createScrollHelperText() {
      const scrollHelper = document.createElement("h2");
@@ -179,8 +181,10 @@ async function handleRouteChange() {
 
 
      
-
-     handleOverlayStateMode(false);
+     if (isMobile())
+          handleOverlayStateMode(false, true);
+     else
+          handleOverlayStateMode(false, false)
 
      if (path === "/about") {
           view = md.render(getAboutMePage);
@@ -272,8 +276,8 @@ async function handleRouteChange() {
 }
 
 
-function handleOverlayStateMode(fullscreenButtonPushed) {
-     if (fullscreenButtonPushed) {
+function handleOverlayStateMode(fullscreenButtonPushed, isMobile) {
+     if (fullscreenButtonPushed && !isMobile) {
           overlayState.mode = overlayState.mode === "expanded" ? "panel" : "expanded";
           renderOverlayState();     //re-render the overlay when fullscreen button is pushed
           if (overlayState.mode === "expanded")
@@ -285,6 +289,12 @@ function handleOverlayStateMode(fullscreenButtonPushed) {
                appState.paused = false;
                sceneController.resume();
           }
+     }
+     else if (isMobile) {
+          if (overlayState.currentView === "/")
+               overlayState.mode = "hidden";
+          else if (overlayState.mode === "hidden")
+               overlayState.mode = "expanded";  
      }
      else if (overlayState.currentView === "/")
           overlayState.mode = "hidden";
@@ -358,7 +368,7 @@ document.addEventListener("click", function (e) {
           return;
 
      if (icon.dataset.action === "minimize-maximize")
-          handleOverlayStateMode(true);
+          handleOverlayStateMode(true, false);
 });
 
 

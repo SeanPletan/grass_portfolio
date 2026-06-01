@@ -7,7 +7,7 @@ import { SMAAPass } from "three/examples/jsm/postprocessing/SMAAPass.js";
 import { Cache } from "three";
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
-import Stats from 'stats.js';
+//import Stats from 'stats.js';
 import fshGrassText from "./shaders/grass_fragment_shader.glsl?raw";
 import vshGrassText from "./shaders/grass_vertex_shader.glsl?raw";
 import fshGroundText from "./shaders/ground_fragment_shader.glsl?raw";
@@ -34,8 +34,8 @@ function lerp(a, b, t) {
 
 export function makeScene() {
 
-     const stats = new Stats();
-     document.body.appendChild(stats.dom);
+     //const stats = new Stats();
+     //document.body.appendChild(stats.dom);
 
      const canvas = document.querySelector("canvas.webgl");
      const scene = new Scene();
@@ -364,7 +364,7 @@ export function makeScene() {
           grassUniforms,
           statueParts,
           controls,
-          stats,
+          //stats,
           renderer,
           grassGeometry,
           scene,
@@ -376,7 +376,7 @@ export function makeScene() {
 
 
 export function startSceneTick(sceneCtx, appState, dom) {
-     const { camera, composer, grassUniforms, grassGeometry, statueParts, controls, stats, renderer, scene, updateGrassCulling, frustum } = sceneCtx;
+     const { camera, composer, grassUniforms, grassGeometry, statueParts, controls, /*stats,*/ renderer, scene, updateGrassCulling, frustum } = sceneCtx;
      const { nav, name } = dom;
      const timer = new Timer();
      let rafId = null;
@@ -437,10 +437,10 @@ export function startSceneTick(sceneCtx, appState, dom) {
                document.getElementById("overlay").classList.add("overlay--hidden");
                appState.uiShown = false;
           }
-          stats.begin();
+          //stats.begin();
           composer.render();
           //renderer.render(scene, camera);
-          stats.end();
+          //stats.end();
           rafId = requestAnimationFrame(tick);   
           //console.log(renderer.info.render.calls, renderer.info.render.triangles); 
      };
