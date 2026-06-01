@@ -321,9 +321,29 @@ document.querySelectorAll(".route").forEach((link) => {
 window.addEventListener("wheel", (event) => {
      if (event.target == scrollTarget) {
           appState.scrollValue += event.deltaY * 0.0008;
-          appState.scrollValue = Math.min(Math.max(appState.scrollValue, 0), 1);
+          appState.scrollValue = Math.min(Math.max(appState.scrollValue, 0), 1); //clamp between 0 and 1
      }
 });
+
+let lastY = 0;
+
+window.addEventListener('touchstart', (e) => {
+     lastY = e.touches[0].clientY;
+});
+
+window.addEventListener('touchmove', (e) => {
+     const currentY = e.touches[0].clientY;
+
+     const delta = lastY - currentY;
+
+     appState.scrollValue += delta * 0.0008;
+
+     appState.scrollValue = Math.min(Math.max(appState.scrollValue, 0), 1);
+
+     lastY = currentY;
+});
+
+
 
 canvas.addEventListener("click", () => {
      history.pushState(null, "", "/");
