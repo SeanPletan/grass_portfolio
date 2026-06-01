@@ -336,7 +336,7 @@ window.addEventListener('touchmove', (e) => {
 
      const delta = lastY - currentY;
 
-     appState.scrollValue += delta * 0.0008;
+     appState.scrollValue += delta * 0.002;
 
      appState.scrollValue = Math.min(Math.max(appState.scrollValue, 0), 1);
 
